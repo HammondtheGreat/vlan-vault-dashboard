@@ -177,6 +177,14 @@ export default function Dashboard() {
               <span className="font-mono">{vlans.length} VLANs</span>
               <span className="text-border">|</span>
               <button
+                onClick={() => navigate("/settings")}
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                <span>Settings</span>
+              </button>
+              <span className="text-border">|</span>
+              <button
                 onClick={signOut}
                 className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
               >
