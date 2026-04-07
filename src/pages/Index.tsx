@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNetwork } from "@/context/NetworkContext";
 import { useAuth } from "@/context/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { parseSubnet, isStale } from "@/data/networkData";
 import GlobalSearchDialog from "@/components/GlobalSearchDialog";
 import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
+import DashboardAnalytics from "@/components/DashboardAnalytics";
+import AuditLogPanel from "@/components/AuditLogPanel";
 import { VlanInfo } from "@/types/network";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus, Settings } from "lucide-react";
+import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
