@@ -44,6 +44,89 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          performed_by: string | null
+          performed_by_email: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          performed_by?: string | null
+          performed_by_email?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          performed_by?: string | null
+          performed_by_email?: string | null
+        }
+        Relationships: []
+      }
+      devices: {
+        Row: {
+          brand: string
+          created_at: string
+          device_name: string
+          docs: string
+          id: string
+          ip_address: string
+          location: string
+          model: string
+          notes: string
+          updated_at: string
+          vlan_id: number
+        }
+        Insert: {
+          brand?: string
+          created_at?: string
+          device_name?: string
+          docs?: string
+          id?: string
+          ip_address?: string
+          location?: string
+          model?: string
+          notes?: string
+          updated_at?: string
+          vlan_id: number
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          device_name?: string
+          docs?: string
+          id?: string
+          ip_address?: string
+          location?: string
+          model?: string
+          notes?: string
+          updated_at?: string
+          vlan_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devices_vlan_id_fkey"
+            columns: ["vlan_id"]
+            isOneToOne: false
+            referencedRelation: "vlans"
+            referencedColumns: ["vlan_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -110,6 +193,36 @@ export type Database = {
           updated_at?: string
           use_tls?: boolean
           user_id?: string
+        }
+        Relationships: []
+      }
+      vlans: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          subnet: string
+          updated_at: string
+          vlan_id: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          subnet?: string
+          updated_at?: string
+          vlan_id: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          subnet?: string
+          updated_at?: string
+          vlan_id?: number
         }
         Relationships: []
       }
