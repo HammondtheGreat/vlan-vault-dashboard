@@ -14,6 +14,7 @@ export interface DeviceEntry {
   docs: string;
   location: string;
   notes: string;
+  updatedAt?: string;
 }
 
 export interface VlanData {

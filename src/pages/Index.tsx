@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { vlans } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
 import { useAuth } from "@/context/AuthContext";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut } from "lucide-react";
+import GlobalSearchDialog from "@/components/GlobalSearchDialog";
+import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search } from "lucide-react";
 
 const vlanIcons: Record<number, React.ReactNode> = {
   100: <Shield className="h-5 w-5" />,
@@ -56,7 +58,20 @@ const badgeColorClasses: Record<number, string> = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { devices } = useNetwork();
-  const { signOut, user } = useAuth();
+  const { signOut } = useAuth();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Ctrl+K shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const homeVlans = vlans.filter((v) => v.id >= 100 && v.id <= 110);
   const otherVlans = vlans.filter((v) => v.id > 110);
@@ -65,7 +80,6 @@ export default function Dashboard() {
     (sum, arr) => sum + arr.filter((d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP").length,
     0
   );
-  const totalIPs = vlans.reduce((sum) => sum + 126, 0);
 
   return (
     <div className="min-h-screen grid-bg">
@@ -80,18 +94,31 @@ export default function Dashboard() {
               <p className="text-xs text-muted-foreground">IP Address Management</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className="font-mono">{totalDevices} devices</span>
-            <span className="text-border">|</span>
-            <span className="font-mono">{vlans.length} VLANs</span>
-            <span className="text-border">|</span>
+
+          <div className="flex items-center gap-3">
+            {/* Global Search trigger */}
             <button
-              onClick={signOut}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
             >
-              <LogOut className="h-3.5 w-3.5" />
-              <span>Logout</span>
+              <Search className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Search…</span>
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd>
             </button>
+
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <span className="font-mono">{totalDevices} devices</span>
+              <span className="text-border">|</span>
+              <span className="font-mono">{vlans.length} VLANs</span>
+              <span className="text-border">|</span>
+              <button
+                onClick={signOut}
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -172,6 +199,8 @@ export default function Dashboard() {
           </section>
         )}
       </main>
+
+      <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }

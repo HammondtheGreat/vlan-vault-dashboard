@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { vlans } from "@/data/networkData";
+import { vlans, findNextAvailableIp, isStale } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
 import { DeviceEntry } from "@/types/network";
 import DeviceFormDialog from "@/components/DeviceFormDialog";
-import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,15 +47,18 @@ export default function VlanDetail() {
   });
 
   const handleSave = (device: DeviceEntry) => {
+    let success: boolean;
     if (editDevice) {
-      updateDevice(vlanId, device);
-      toast.success("Device updated");
+      success = updateDevice(vlanId, device);
+      if (success) toast.success("Device updated");
     } else {
-      addDevice(vlanId, device);
-      toast.success("Device added");
+      success = addDevice(vlanId, device);
+      if (success) toast.success("Device added");
     }
-    setFormOpen(false);
-    setEditDevice(null);
+    if (success) {
+      setFormOpen(false);
+      setEditDevice(null);
+    }
   };
 
   const handleDelete = () => {
@@ -65,6 +68,19 @@ export default function VlanDetail() {
       setDeleteTarget(null);
     }
   };
+
+  const handleNextAvailable = () => {
+    const nextIp = findNextAvailableIp(vlan.subnet, allDevices);
+    if (nextIp) {
+      toast.info(`Next available IP: ${nextIp}`, { duration: 4000 });
+      setEditDevice(null);
+      setFormOpen(true);
+    } else {
+      toast.error("No available IPs in this subnet");
+    }
+  };
+
+  const staleCount = allDevices.filter((d) => d.device && isStale(d)).length;
 
   return (
     <div className="min-h-screen grid-bg">
@@ -84,21 +100,34 @@ export default function VlanDetail() {
               <p className="font-mono text-xs text-muted-foreground">{vlan.subnet}</p>
             </div>
           </div>
-          <Button size="sm" onClick={() => { setEditDevice(null); setFormOpen(true); }} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="h-4 w-4" /> Add Device
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={handleNextAvailable} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+              <Zap className="h-4 w-4" /> Next Available IP
+            </Button>
+            <Button size="sm" onClick={() => { setEditDevice(null); setFormOpen(true); }} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="h-4 w-4" /> Add Device
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="container py-6 space-y-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search devices..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-card border-border"
-          />
+        <div className="flex items-center gap-4">
+          <div className="relative max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search devices..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 bg-card border-border"
+            />
+          </div>
+          {staleCount > 0 && (
+            <div className="flex items-center gap-1.5 text-xs text-amber-400">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{staleCount} stale</span>
+            </div>
+          )}
         </div>
 
         <div className="border border-border rounded-lg overflow-hidden">
@@ -113,42 +142,58 @@ export default function VlanDetail() {
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Docs</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Location</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Notes</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Status</th>
                   <th className="text-right px-4 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider w-24">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-muted-foreground">No devices found</td>
+                    <td colSpan={9} className="text-center py-12 text-muted-foreground">No devices found</td>
                   </tr>
                 ) : (
-                  filtered.map((d, i) => (
-                    <tr key={d.id} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "bg-card/30" : ""}`}>
-                      <td className="px-4 py-2.5 font-mono text-primary text-xs">{d.ipAddress}</td>
-                      <td className="px-4 py-2.5 text-foreground font-medium">{d.device || "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{d.brand || "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{d.model || "—"}</td>
-                      <td className="px-4 py-2.5">{d.docs || "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{d.location || "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground text-xs">{d.notes || "—"}</td>
-                      <td className="px-4 py-2.5">
-                        <div className="flex justify-end gap-1">
-                          <button
-                            onClick={() => { setEditDevice(d); setFormOpen(true); }}
-                            className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(d)}
-                            className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  filtered.map((d, i) => {
+                    const stale = d.device && isStale(d);
+                    return (
+                      <tr key={d.id} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "bg-card/30" : ""}`}>
+                        <td className="px-4 py-2.5 font-mono text-primary text-xs">{d.ipAddress}</td>
+                        <td className="px-4 py-2.5 text-foreground font-medium">{d.device || "—"}</td>
+                        <td className="px-4 py-2.5 text-muted-foreground">{d.brand || "—"}</td>
+                        <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{d.model || "—"}</td>
+                        <td className="px-4 py-2.5">{d.docs || "—"}</td>
+                        <td className="px-4 py-2.5 text-muted-foreground">{d.location || "—"}</td>
+                        <td className="px-4 py-2.5 text-muted-foreground text-xs">{d.notes || "—"}</td>
+                        <td className="px-4 py-2.5">
+                          {stale ? (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                              <Clock className="h-2.5 w-2.5" />
+                              STALE
+                            </span>
+                          ) : d.device ? (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                              OK
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <div className="flex justify-end gap-1">
+                            <button
+                              onClick={() => { setEditDevice(d); setFormOpen(true); }}
+                              className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(d)}
+                              className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -163,6 +208,7 @@ export default function VlanDetail() {
         onSave={handleSave}
         device={editDevice}
         vlanSubnet={vlan.subnet}
+        vlanId={vlanId}
       />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
