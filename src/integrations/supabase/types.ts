@@ -77,6 +77,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cable_drops: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          label: string
+          location: string
+          notes: string
+          sort_order: number
+          switch_model: string
+          switch_port: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          label?: string
+          location?: string
+          notes?: string
+          sort_order?: number
+          switch_model?: string
+          switch_port?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          label?: string
+          location?: string
+          notes?: string
+          sort_order?: number
+          switch_model?: string
+          switch_port?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       devices: {
         Row: {
           brand: string

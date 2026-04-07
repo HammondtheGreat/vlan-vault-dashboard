@@ -12,6 +12,7 @@ import VlanDetail from "./pages/VlanDetail.tsx";
 import Settings from "./pages/Settings.tsx";
 import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import CableDrops from "./pages/CableDrops.tsx";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/vlan/:id" element={<ProtectedRoute><VlanDetail /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/cables" element={<ProtectedRoute><CableDrops /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

@@ -12,7 +12,7 @@ import VlanSummaryTable from "@/components/VlanSummaryTable";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
-import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List } from "lucide-react";
+import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List, Cable } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -303,6 +303,9 @@ export default function Dashboard() {
           </Button>
           <Button size="sm" variant={showAuditLog ? "default" : "outline"} onClick={() => setShowAuditLog(!showAuditLog)} className="gap-1.5">
             <ScrollText className="h-4 w-4" /> Audit Log
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => navigate("/cables")} className="gap-1.5">
+            <Cable className="h-4 w-4" /> Cable Drops
           </Button>
         </div>
 
