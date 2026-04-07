@@ -275,25 +275,35 @@ export default function Dashboard() {
 
       <main className="container py-8 space-y-8">
         {/* Action bar */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => setVlanFormOpen(true)} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
             <Plus className="h-4 w-4" /> Add VLAN
           </Button>
-          <Button size="sm" variant={showSummary ? "default" : "outline"} onClick={() => setShowSummary(!showSummary)} className="gap-1.5">
-            <List className="h-4 w-4" /> VLAN Summary
-          </Button>
-          <Button size="sm" variant={showAnalytics ? "default" : "outline"} onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
-            <BarChart3 className="h-4 w-4" /> Analytics
-          </Button>
-          <Button size="sm" variant={showAuditLog ? "default" : "outline"} onClick={() => setShowAuditLog(!showAuditLog)} className="gap-1.5">
-            <ScrollText className="h-4 w-4" /> Audit Log
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => navigate("/cables")} className="gap-1.5">
-            <Cable className="h-4 w-4" /> Cable Drops
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => navigate("/pdu")} className="gap-1.5">
-            <Plug className="h-4 w-4" /> PDU
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1.5">
+                <Menu className="h-4 w-4" /> Views <ChevronDown className="h-3 w-3 ml-0.5 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setShowSummary(!showSummary)}>
+                <List className="h-4 w-4 mr-2" /> VLAN Summary {showSummary && "✓"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowAnalytics(!showAnalytics)}>
+                <BarChart3 className="h-4 w-4 mr-2" /> Analytics {showAnalytics && "✓"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowAuditLog(!showAuditLog)}>
+                <ScrollText className="h-4 w-4 mr-2" /> Audit Log {showAuditLog && "✓"}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/cables")}>
+                <Cable className="h-4 w-4 mr-2" /> Cable Drops
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/pdu")}>
+                <Plug className="h-4 w-4 mr-2" /> PDU
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {showSummary && <VlanSummaryTable />}
