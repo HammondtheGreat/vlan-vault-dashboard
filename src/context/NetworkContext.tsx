@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { DeviceEntry, VlanInfo } from "@/types/network";
-import { findIpConflict, parseSubnet } from "@/data/networkData";
+import { findIpConflict, parseSubnet, ipToNum, numToIp } from "@/data/networkData";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
