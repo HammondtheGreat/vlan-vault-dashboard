@@ -302,6 +302,8 @@ export default function VlanDetail() {
         vlanId={vlanId}
       />
 
+      <VlanFormDialog open={vlanEditOpen} onClose={() => setVlanEditOpen(false)} onSave={handleVlanEdit} vlan={vlan} />
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
