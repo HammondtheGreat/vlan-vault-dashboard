@@ -201,6 +201,8 @@ export default function VlanDetail() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">{filtered.length} of {allDevices.length} entries shown</p>
+
+        <JunosConfigGenerator vlan={vlan} />
       </main>
 
       <DeviceFormDialog
