@@ -50,13 +50,13 @@ export default function VlanDetail() {
     );
   });
 
-  const handleSave = (device: DeviceEntry) => {
+  const handleSave = async (device: DeviceEntry) => {
     let success: boolean;
     if (editDevice) {
-      success = updateDevice(vlanId, device);
+      success = await updateDevice(vlanId, device);
       if (success) toast.success("Device updated");
     } else {
-      success = addDevice(vlanId, device);
+      success = await addDevice(vlanId, device);
       if (success) toast.success("Device added");
     }
     if (success) {

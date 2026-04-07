@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNetwork } from "@/context/NetworkContext";
 import { useAuth } from "@/context/AuthContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
+import { parseSubnet, isStale } from "@/data/networkData";
 import GlobalSearchDialog from "@/components/GlobalSearchDialog";
 import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
+import DashboardAnalytics from "@/components/DashboardAnalytics";
+import AuditLogPanel from "@/components/AuditLogPanel";
 import { VlanInfo } from "@/types/network";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus, Settings } from "lucide-react";
+import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -70,11 +73,13 @@ const defaultBadgeColor = "bg-slate-500/20 text-slate-300";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { devices, vlans, addVlan } = useNetwork();
+  const { devices, vlans, addVlan, loading } = useNetwork();
   const { signOut } = useAuth();
   const { settings } = useAppSettings();
   const [searchOpen, setSearchOpen] = useState(false);
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showAuditLog, setShowAuditLog] = useState(false);
 
   // Apply page title dynamically
   useEffect(() => {
@@ -105,17 +110,30 @@ export default function Dashboard() {
     0
   );
 
-  const handleAddVlan = (vlan: VlanInfo) => {
-    if (addVlan(vlan)) {
+  const handleAddVlan = async (vlan: VlanInfo) => {
+    if (await addVlan(vlan)) {
       toast.success(`VLAN ${vlan.id} (${vlan.name}) added`);
       setVlanFormOpen(false);
     }
   };
 
   const renderVlanCard = (vlan: { id: number; name: string; subnet: string }) => {
-    const devs = (devices[vlan.id] || []).filter(
+    const allDevs = devices[vlan.id] || [];
+    const devs = allDevs.filter(
       (d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP"
     );
+    // Subnet utilization
+    let usedCount = allDevs.length;
+    let totalHosts = 0;
+    let utilPct = 0;
+    try {
+      const { hostCount } = parseSubnet(vlan.subnet);
+      totalHosts = hostCount - 2; // exclude network + broadcast
+      utilPct = totalHosts > 0 ? Math.round((usedCount / totalHosts) * 100) : 0;
+    } catch {}
+
+    const utilColor = utilPct > 80 ? "bg-destructive" : utilPct > 50 ? "bg-amber-500" : "bg-emerald-500";
+
     return (
       <button
         key={vlan.id}
@@ -131,7 +149,16 @@ export default function Dashboard() {
           </span>
         </div>
         <h3 className="font-semibold text-foreground text-sm mb-1">{vlan.name}</h3>
-        <p className="font-mono text-xs text-muted-foreground mb-3">{vlan.subnet}</p>
+        <p className="font-mono text-xs text-muted-foreground mb-2">{vlan.subnet}</p>
+        <div className="mb-2">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+            <span>{usedCount}/{totalHosts} IPs used</span>
+            <span>{utilPct}%</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-muted/50 overflow-hidden">
+            <div className={`h-full rounded-full ${utilColor} transition-all`} style={{ width: `${Math.min(utilPct, 100)}%` }} />
+          </div>
+        </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             {devs.length} device{devs.length !== 1 ? "s" : ""}
@@ -145,6 +172,17 @@ export default function Dashboard() {
       </button>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen grid-bg flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Activity className="h-8 w-8 text-primary animate-pulse mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading IPAM data…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen grid-bg">
@@ -223,6 +261,18 @@ export default function Dashboard() {
             </div>
           </section>
         )}
+
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant={showAnalytics ? "default" : "outline"} onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
+            <BarChart3 className="h-4 w-4" /> Analytics
+          </Button>
+          <Button size="sm" variant={showAuditLog ? "default" : "outline"} onClick={() => setShowAuditLog(!showAuditLog)} className="gap-1.5">
+            <ScrollText className="h-4 w-4" /> Audit Log
+          </Button>
+        </div>
+
+        {showAnalytics && <DashboardAnalytics />}
+        {showAuditLog && <AuditLogPanel />}
       </main>
 
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
