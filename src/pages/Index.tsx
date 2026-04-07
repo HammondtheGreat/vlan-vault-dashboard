@@ -9,29 +9,12 @@ import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import DashboardAnalytics from "@/components/DashboardAnalytics";
 import AuditLogPanel from "@/components/AuditLogPanel";
+import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, X } from "lucide-react";
+import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
-
-const vlanIcons: Record<number, React.ReactNode> = {
-  100: <Shield className="h-5 w-5" />,
-  101: <Zap className="h-5 w-5" />,
-  102: <Network className="h-5 w-5" />,
-  103: <HardDrive className="h-5 w-5" />,
-  104: <MonitorSpeaker className="h-5 w-5" />,
-  105: <Server className="h-5 w-5" />,
-  106: <MonitorSpeaker className="h-5 w-5" />,
-  107: <Printer className="h-5 w-5" />,
-  108: <Camera className="h-5 w-5" />,
-  109: <Phone className="h-5 w-5" />,
-  110: <Wifi className="h-5 w-5" />,
-  111: <Globe className="h-5 w-5" />,
-  112: <Shield className="h-5 w-5" />,
-};
-
-const defaultIcon = <Network className="h-5 w-5" />;
 
 const vlanColorClasses: Record<number, string> = {
   100: "border-red-500/40 bg-red-500/5 hover:bg-red-500/10",
@@ -74,7 +57,7 @@ const defaultBadgeColor = "bg-slate-500/20 text-slate-300";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { devices, vlans, addVlan, loading } = useNetwork();
+  const { devices, vlans, addVlan, updateVlan, loading } = useNetwork();
   const { signOut } = useAuth();
   const { settings } = useAppSettings();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -142,8 +125,12 @@ export default function Dashboard() {
         className={`relative border rounded-lg p-4 text-left transition-all duration-200 ${vlanColorClasses[vlan.id] || defaultColorClass} cursor-pointer group`}
       >
         <div className="flex items-start justify-between mb-3">
-          <div className={iconColorClasses[vlan.id] || defaultIconColor}>
-            {vlanIcons[vlan.id] || defaultIcon}
+          <div className={iconColorClasses[vlan.id] || defaultIconColor} onClick={(e) => e.stopPropagation()}>
+            <IconPicker
+              value={(vlans.find(v => v.id === vlan.id) as VlanInfo)?.icon || "Network"}
+              onChange={(icon) => updateVlan(vlan.id, { icon })}
+              className={iconColorClasses[vlan.id] || defaultIconColor}
+            />
           </div>
           <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${badgeColorClasses[vlan.id] || defaultBadgeColor}`}>
             VLAN {vlan.id}

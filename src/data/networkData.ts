@@ -33,6 +33,7 @@ function makeDevices(_vlanId: number, entries: Partial<DeviceEntry>[]): DeviceEn
     docs: e.docs || "",
     location: e.location || "",
     notes: e.notes || "",
+    status: e.status || "",
     updatedAt: e.updatedAt || now(),
   }));
 }

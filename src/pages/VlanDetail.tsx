@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { findNextAvailableIp, isStale } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
-import { DeviceEntry } from "@/types/network";
+import { DeviceEntry, VlanInfo } from "@/types/network";
 import DeviceFormDialog from "@/components/DeviceFormDialog";
+import VlanFormDialog from "@/components/VlanFormDialog";
 import JunosConfigGenerator from "@/components/JunosConfigGenerator";
-import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock, AlertTriangle, FileText, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,7 +34,7 @@ export default function VlanDetail() {
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState("");
   const [deleteVlanOpen, setDeleteVlanOpen] = useState(false);
-
+  const [vlanEditOpen, setVlanEditOpen] = useState(false);
   if (!vlan) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">VLAN not found</div>;
 
   const allDevices = devices[vlanId] || [];
@@ -105,6 +106,34 @@ export default function VlanDetail() {
     navigate("/");
   };
 
+  const handleVlanEdit = async (updatedVlan: VlanInfo) => {
+    await updateVlan(vlanId, {
+      id: updatedVlan.id,
+      name: updatedVlan.name,
+      subnet: updatedVlan.subnet,
+    });
+    toast.success("VLAN updated");
+    setVlanEditOpen(false);
+    if (updatedVlan.id !== vlanId) {
+      navigate(`/vlan/${updatedVlan.id}`);
+    }
+  };
+
+  const statusBadge = (status: string) => {
+    if (!status) return null;
+    const colors: Record<string, string> = {
+      "In Use": "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+      "Future": "bg-blue-500/15 text-blue-400 border-blue-500/20",
+      "Reserved": "bg-amber-500/15 text-amber-400 border-amber-500/20",
+      "Bad": "bg-destructive/15 text-destructive border-destructive/20",
+    };
+    return (
+      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${colors[status] || "bg-muted text-muted-foreground border-border"}`}>
+        {status.toUpperCase()}
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen grid-bg">
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
@@ -146,6 +175,9 @@ export default function VlanDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => setVlanEditOpen(true)} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+              <Settings2 className="h-4 w-4" /> <span className="hidden sm:inline">Edit VLAN</span><span className="sm:hidden">Edit</span>
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setDeleteVlanOpen(true)} className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10">
               <Trash2 className="h-4 w-4" /> <span className="hidden sm:inline">Delete VLAN</span><span className="sm:hidden">Delete</span>
             </Button>
@@ -208,20 +240,29 @@ export default function VlanDetail() {
                         <td className="px-4 py-2.5 text-foreground font-medium">{d.device || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground">{d.brand || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{d.model || "—"}</td>
-                        <td className="px-4 py-2.5">{d.docs || "—"}</td>
+                        <td className="px-4 py-2.5">
+                          {d.docs ? (
+                            <a href={d.docs.startsWith("http") ? d.docs : undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
+                              <FileText className="h-3.5 w-3.5" />
+                              <span className="text-xs max-w-[80px] truncate">{d.docs.startsWith("http") ? "Link" : d.docs}</span>
+                            </a>
+                          ) : "—"}
+                        </td>
                         <td className="px-4 py-2.5 text-muted-foreground">{d.location || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground text-xs">{d.notes || "—"}</td>
                         <td className="px-4 py-2.5">
-                          {stale ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20">
-                              <Clock className="h-2.5 w-2.5" />
-                              STALE
-                            </span>
-                          ) : d.device ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-                              OK
-                            </span>
-                          ) : null}
+                          {d.status ? statusBadge(d.status) : (
+                            stale ? (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                                <Clock className="h-2.5 w-2.5" />
+                                STALE
+                              </span>
+                            ) : d.device ? (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                                OK
+                              </span>
+                            ) : null
+                          )}
                         </td>
                         <td className="px-4 py-2.5">
                           <div className="flex justify-end gap-1">
@@ -260,6 +301,8 @@ export default function VlanDetail() {
         vlanSubnet={vlan.subnet}
         vlanId={vlanId}
       />
+
+      <VlanFormDialog open={vlanEditOpen} onClose={() => setVlanEditOpen(false)} onSave={handleVlanEdit} vlan={vlan} />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent className="bg-card border-border">

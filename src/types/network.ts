@@ -3,6 +3,7 @@ export interface VlanInfo {
   name: string;
   subnet: string;
   color: string;
+  icon?: string;
 }
 
 export interface DeviceEntry {
@@ -14,8 +15,13 @@ export interface DeviceEntry {
   docs: string;
   location: string;
   notes: string;
+  status: string;
   updatedAt?: string;
 }
+
+export type DeviceStatus = "" | "In Use" | "Future" | "Reserved" | "Bad";
+
+export const DEVICE_STATUSES: DeviceStatus[] = ["", "In Use", "Future", "Reserved", "Bad"];
 
 export interface VlanData {
   vlan: VlanInfo;
