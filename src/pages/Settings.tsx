@@ -38,13 +38,13 @@ export default function Settings() {
         </div>
       </header>
 
-      <main className="container py-6 max-w-2xl">
+      <main className="container py-6 max-w-2xl px-4">
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="bg-muted/50 border border-border">
-            <TabsTrigger value="general" className="gap-1.5 data-[state=active]:bg-card"><Globe className="h-3.5 w-3.5" /> General</TabsTrigger>
-            <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card"><User className="h-3.5 w-3.5" /> Profile</TabsTrigger>
-            <TabsTrigger value="users" className="gap-1.5 data-[state=active]:bg-card"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>
-            <TabsTrigger value="smtp" className="gap-1.5 data-[state=active]:bg-card"><Mail className="h-3.5 w-3.5" /> SMTP</TabsTrigger>
+          <TabsList className="bg-muted/50 border border-border w-full sm:w-auto overflow-x-auto">
+            <TabsTrigger value="general" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Globe className="h-3.5 w-3.5" /> General</TabsTrigger>
+            <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><User className="h-3.5 w-3.5" /> Profile</TabsTrigger>
+            <TabsTrigger value="users" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>
+            <TabsTrigger value="smtp" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Mail className="h-3.5 w-3.5" /> SMTP</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general"><GeneralSettings /></TabsContent>
@@ -381,39 +381,41 @@ function UserManagement({ currentUserId }: { currentUserId?: string }) {
         <p className="text-sm text-muted-foreground">Loading users…</p>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/50 border-b border-border">
-                <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Email</th>
-                <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Display Name</th>
-                <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Last Sign In</th>
-                <th className="text-right px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider w-24">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u, i) => (
-                <tr key={u.id} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "bg-card/30" : ""}`}>
-                  <td className="px-4 py-2.5 font-mono text-xs text-primary">{u.email}</td>
-                  <td className="px-4 py-2.5 text-foreground">{u.display_name || "—"}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground text-xs">
-                    {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "Never"}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex justify-end gap-1">
-                      <button onClick={() => openEdit(u)} className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      {u.id !== currentUserId && (
-                        <button onClick={() => setDeleteTarget(u)} className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[500px]">
+              <thead>
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Email</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Display Name</th>
+                  <th className="text-left px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider hidden sm:table-cell">Last Sign In</th>
+                  <th className="text-right px-4 py-2.5 font-medium text-muted-foreground text-xs uppercase tracking-wider w-24">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map((u, i) => (
+                  <tr key={u.id} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "bg-card/30" : ""}`}>
+                    <td className="px-4 py-2.5 font-mono text-xs text-primary break-all">{u.email}</td>
+                    <td className="px-4 py-2.5 text-foreground">{u.display_name || "—"}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground text-xs hidden sm:table-cell">
+                      {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : "Never"}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <div className="flex justify-end gap-1">
+                        <button onClick={() => openEdit(u)} className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        {u.id !== currentUserId && (
+                          <button onClick={() => setDeleteTarget(u)} className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
