@@ -199,7 +199,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setSearchOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
@@ -209,28 +209,71 @@ export default function Dashboard() {
               <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd>
             </button>
 
-            <ImportExportButtons />
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="font-mono">{totalDevices} devices</span>
-              <span className="text-border">|</span>
-              <span className="font-mono">{vlans.length} VLANs</span>
-              <span className="text-border">|</span>
-              <button
-                onClick={() => navigate("/settings")}
-                className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Settings className="h-3.5 w-3.5" />
-                <span>Settings</span>
-              </button>
-              <span className="text-border">|</span>
-              <button
-                onClick={signOut}
-                className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-                <span>Logout</span>
-              </button>
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center gap-2">
+              <ImportExportButtons />
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span className="font-mono">{totalDevices} devices</span>
+                <span className="text-border">|</span>
+                <span className="font-mono">{vlans.length} VLANs</span>
+                <span className="text-border">|</span>
+                <button
+                  onClick={() => navigate("/settings")}
+                  className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                  <span>Settings</span>
+                </button>
+                <span className="text-border">|</span>
+                <button
+                  onClick={signOut}
+                  className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Logout</span>
+                </button>
+              </div>
             </div>
+
+            {/* Mobile menu */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className="md:hidden h-8 w-8 rounded-md bg-muted/50 border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  <Menu className="h-4 w-4" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-card border-border w-72 p-0">
+                <div className="p-4 border-b border-border">
+                  <h2 className="text-sm font-semibold text-foreground">Menu</h2>
+                </div>
+                <div className="p-4 space-y-1">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground py-2">
+                    <span className="font-mono">{totalDevices} devices</span>
+                    <span className="text-border">·</span>
+                    <span className="font-mono">{vlans.length} VLANs</span>
+                  </div>
+                  <div className="border-t border-border my-2" />
+                  <div className="py-2">
+                    <ImportExportButtons />
+                  </div>
+                  <div className="border-t border-border my-2" />
+                  <button
+                    onClick={() => navigate("/settings")}
+                    className="flex items-center gap-2 w-full py-2.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Settings
+                  </button>
+                  <button
+                    onClick={signOut}
+                    className="flex items-center gap-2 w-full py-2.5 text-sm text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
