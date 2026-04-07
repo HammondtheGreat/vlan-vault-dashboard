@@ -240,20 +240,29 @@ export default function VlanDetail() {
                         <td className="px-4 py-2.5 text-foreground font-medium">{d.device || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground">{d.brand || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{d.model || "—"}</td>
-                        <td className="px-4 py-2.5">{d.docs || "—"}</td>
+                        <td className="px-4 py-2.5">
+                          {d.docs ? (
+                            <a href={d.docs.startsWith("http") ? d.docs : undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
+                              <FileText className="h-3.5 w-3.5" />
+                              <span className="text-xs max-w-[80px] truncate">{d.docs.startsWith("http") ? "Link" : d.docs}</span>
+                            </a>
+                          ) : "—"}
+                        </td>
                         <td className="px-4 py-2.5 text-muted-foreground">{d.location || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground text-xs">{d.notes || "—"}</td>
                         <td className="px-4 py-2.5">
-                          {stale ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20">
-                              <Clock className="h-2.5 w-2.5" />
-                              STALE
-                            </span>
-                          ) : d.device ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-                              OK
-                            </span>
-                          ) : null}
+                          {d.status ? statusBadge(d.status) : (
+                            stale ? (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20">
+                                <Clock className="h-2.5 w-2.5" />
+                                STALE
+                              </span>
+                            ) : d.device ? (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                                OK
+                              </span>
+                            ) : null
+                          )}
                         </td>
                         <td className="px-4 py-2.5">
                           <div className="flex justify-end gap-1">
