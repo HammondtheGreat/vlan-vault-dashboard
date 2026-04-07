@@ -3,6 +3,7 @@ export interface VlanInfo {
   name: string;
   subnet: string;
   color: string;
+  icon?: string;
 }
 
 export interface DeviceEntry {
