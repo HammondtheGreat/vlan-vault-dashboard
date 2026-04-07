@@ -106,6 +106,34 @@ export default function VlanDetail() {
     navigate("/");
   };
 
+  const handleVlanEdit = async (updatedVlan: VlanInfo) => {
+    await updateVlan(vlanId, {
+      id: updatedVlan.id,
+      name: updatedVlan.name,
+      subnet: updatedVlan.subnet,
+    });
+    toast.success("VLAN updated");
+    setVlanEditOpen(false);
+    if (updatedVlan.id !== vlanId) {
+      navigate(`/vlan/${updatedVlan.id}`);
+    }
+  };
+
+  const statusBadge = (status: string) => {
+    if (!status) return null;
+    const colors: Record<string, string> = {
+      "In Use": "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+      "Future": "bg-blue-500/15 text-blue-400 border-blue-500/20",
+      "Reserved": "bg-amber-500/15 text-amber-400 border-amber-500/20",
+      "Bad": "bg-destructive/15 text-destructive border-destructive/20",
+    };
+    return (
+      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${colors[status] || "bg-muted text-muted-foreground border-border"}`}>
+        {status.toUpperCase()}
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen grid-bg">
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
