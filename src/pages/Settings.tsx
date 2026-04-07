@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useAppSettings, useSmtpSettings } from "@/hooks/useAppSettings";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Settings as SettingsIcon, User, Mail, Globe, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Settings as SettingsIcon, User, Mail, Globe, Eye, EyeOff, Users, Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
