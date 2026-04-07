@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useNetwork } from "@/context/NetworkContext";
 import { useAuth } from "@/context/AuthContext";
 import GlobalSearchDialog from "@/components/GlobalSearchDialog";
+import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import { VlanInfo } from "@/types/network";
 import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus } from "lucide-react";
@@ -157,6 +158,7 @@ export default function Dashboard() {
               <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd>
             </button>
 
+            <ImportExportButtons />
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="font-mono">{totalDevices} devices</span>
               <span className="text-border">|</span>
