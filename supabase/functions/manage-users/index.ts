@@ -22,21 +22,20 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+  // Admin client for user management
+  const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
   // Verify the caller's JWT
-  const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!);
   const token = authHeader.replace("Bearer ", "");
-  const { data: { user: caller }, error: authError } = await anonClient.auth.getUser(token);
+  const { data: { user: caller }, error: authError } = await adminClient.auth.getUser(token);
   if (authError || !caller) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-
-  // Admin client for user management
-  const adminClient = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
 
   try {
     const { action, ...params } = await req.json();
