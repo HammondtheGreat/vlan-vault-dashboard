@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNetwork } from "@/context/NetworkContext";
-import { vlans } from "@/data/networkData";
 import { DeviceEntry } from "@/types/network";
 import {
   Dialog,
@@ -18,7 +17,7 @@ interface SearchResult {
 
 export default function GlobalSearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
-  const { devices } = useNetwork();
+  const { devices, vlans } = useNetwork();
   const navigate = useNavigate();
 
   useEffect(() => {

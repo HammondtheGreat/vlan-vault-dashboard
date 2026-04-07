@@ -1,25 +1,29 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { DeviceEntry } from "@/types/network";
-import { loadData, saveData, findIpConflict, vlans } from "@/data/networkData";
+import { DeviceEntry, VlanInfo } from "@/types/network";
+import { loadData, saveData, loadVlans, saveVlans, findIpConflict } from "@/data/networkData";
 import { toast } from "sonner";
 
 interface NetworkContextType {
   devices: Record<number, DeviceEntry[]>;
+  vlans: VlanInfo[];
   addDevice: (vlanId: number, device: DeviceEntry) => boolean;
   updateDevice: (vlanId: number, device: DeviceEntry) => boolean;
   deleteDevice: (vlanId: number, deviceId: string) => void;
+  updateVlan: (vlanId: number, updates: Partial<VlanInfo>) => void;
+  addVlan: (vlan: VlanInfo) => boolean;
+  deleteVlan: (vlanId: number) => void;
 }
 
 const NetworkContext = createContext<NetworkContextType | null>(null);
 
 export function NetworkProvider({ children }: { children: React.ReactNode }) {
   const [devices, setDevices] = useState<Record<number, DeviceEntry[]>>(loadData);
+  const [vlans, setVlans] = useState<VlanInfo[]>(loadVlans);
 
   const addDevice = useCallback((vlanId: number, device: DeviceEntry): boolean => {
     const current = devices;
-    // Conflict check
     if (device.ipAddress) {
-      const conflict = findIpConflict(device.ipAddress, current);
+      const conflict = findIpConflict(device.ipAddress, current, vlans);
       if (conflict) {
         toast.error(`IP Conflict: ${device.ipAddress} already exists in VLAN ${conflict.vlanId} (${conflict.vlanName}) — assigned to "${conflict.device.device || "unnamed"}"`, { duration: 6000 });
         return false;
@@ -32,13 +36,12 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
     return true;
-  }, [devices]);
+  }, [devices, vlans]);
 
   const updateDevice = useCallback((vlanId: number, device: DeviceEntry): boolean => {
     const current = devices;
-    // Conflict check (exclude the device being edited)
     if (device.ipAddress) {
-      const conflict = findIpConflict(device.ipAddress, current, device.id);
+      const conflict = findIpConflict(device.ipAddress, current, vlans, device.id);
       if (conflict) {
         toast.error(`IP Conflict: ${device.ipAddress} already exists in VLAN ${conflict.vlanId} (${conflict.vlanName}) — assigned to "${conflict.device.device || "unnamed"}"`, { duration: 6000 });
         return false;
@@ -54,7 +57,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
     return true;
-  }, [devices]);
+  }, [devices, vlans]);
 
   const deleteDevice = useCallback((vlanId: number, deviceId: string) => {
     setDevices((prev) => {
@@ -67,8 +70,48 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const updateVlan = useCallback((vlanId: number, updates: Partial<VlanInfo>) => {
+    setVlans((prev) => {
+      const next = prev.map((v) => (v.id === vlanId ? { ...v, ...updates } : v));
+      saveVlans(next);
+      return next;
+    });
+  }, []);
+
+  const addVlan = useCallback((vlan: VlanInfo): boolean => {
+    const exists = vlans.some((v) => v.id === vlan.id);
+    if (exists) {
+      toast.error(`VLAN ${vlan.id} already exists`);
+      return false;
+    }
+    setVlans((prev) => {
+      const next = [...prev, vlan].sort((a, b) => a.id - b.id);
+      saveVlans(next);
+      return next;
+    });
+    setDevices((prev) => {
+      const next = { ...prev, [vlan.id]: [] };
+      saveData(next);
+      return next;
+    });
+    return true;
+  }, [vlans]);
+
+  const deleteVlan = useCallback((vlanId: number) => {
+    setVlans((prev) => {
+      const next = prev.filter((v) => v.id !== vlanId);
+      saveVlans(next);
+      return next;
+    });
+    setDevices((prev) => {
+      const { [vlanId]: _, ...next } = prev;
+      saveData(next);
+      return next;
+    });
+  }, []);
+
   return (
-    <NetworkContext.Provider value={{ devices, addDevice, updateDevice, deleteDevice }}>
+    <NetworkContext.Provider value={{ devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan, addVlan, deleteVlan }}>
       {children}
     </NetworkContext.Provider>
   );

@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { vlans } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
 import { useAuth } from "@/context/AuthContext";
 import GlobalSearchDialog from "@/components/GlobalSearchDialog";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search } from "lucide-react";
+import VlanFormDialog from "@/components/VlanFormDialog";
+import { VlanInfo } from "@/types/network";
+import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const vlanIcons: Record<number, React.ReactNode> = {
   100: <Shield className="h-5 w-5" />,
@@ -22,6 +25,8 @@ const vlanIcons: Record<number, React.ReactNode> = {
   112: <Shield className="h-5 w-5" />,
 };
 
+const defaultIcon = <Network className="h-5 w-5" />;
+
 const vlanColorClasses: Record<number, string> = {
   100: "border-red-500/40 bg-red-500/5 hover:bg-red-500/10",
   101: "border-amber-500/40 bg-amber-500/5 hover:bg-amber-500/10",
@@ -38,12 +43,16 @@ const vlanColorClasses: Record<number, string> = {
   112: "border-red-500/40 bg-red-500/5 hover:bg-red-500/10",
 };
 
+const defaultColorClass = "border-slate-500/40 bg-slate-500/5 hover:bg-slate-500/10";
+
 const iconColorClasses: Record<number, string> = {
   100: "text-red-400", 101: "text-amber-400", 102: "text-cyan-400",
   103: "text-purple-400", 104: "text-green-400", 105: "text-blue-400",
   106: "text-pink-400", 107: "text-orange-400", 108: "text-rose-400",
   109: "text-teal-400", 110: "text-cyan-300", 111: "text-cyan-400", 112: "text-red-400",
 };
+
+const defaultIconColor = "text-slate-400";
 
 const badgeColorClasses: Record<number, string> = {
   100: "bg-red-500/20 text-red-300", 101: "bg-amber-500/20 text-amber-300",
@@ -55,13 +64,15 @@ const badgeColorClasses: Record<number, string> = {
   112: "bg-red-500/20 text-red-300",
 };
 
+const defaultBadgeColor = "bg-slate-500/20 text-slate-300";
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { devices } = useNetwork();
+  const { devices, vlans, addVlan } = useNetwork();
   const { signOut } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [vlanFormOpen, setVlanFormOpen] = useState(false);
 
-  // Ctrl+K shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -73,13 +84,54 @@ export default function Dashboard() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const homeVlans = vlans.filter((v) => v.id >= 100 && v.id <= 110);
-  const otherVlans = vlans.filter((v) => v.id > 110);
+  const homeVlans = vlans.filter((v) => v.id >= 100 && v.id <= 111);
+  const otherVlans = vlans.filter((v) => v.id > 111 || v.id < 100);
 
   const totalDevices = Object.values(devices).reduce(
     (sum, arr) => sum + arr.filter((d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP").length,
     0
   );
+
+  const handleAddVlan = (vlan: VlanInfo) => {
+    if (addVlan(vlan)) {
+      toast.success(`VLAN ${vlan.id} (${vlan.name}) added`);
+      setVlanFormOpen(false);
+    }
+  };
+
+  const renderVlanCard = (vlan: { id: number; name: string; subnet: string }) => {
+    const devs = (devices[vlan.id] || []).filter(
+      (d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP"
+    );
+    return (
+      <button
+        key={vlan.id}
+        onClick={() => navigate(`/vlan/${vlan.id}`)}
+        className={`relative border rounded-lg p-4 text-left transition-all duration-200 ${vlanColorClasses[vlan.id] || defaultColorClass} cursor-pointer group`}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div className={iconColorClasses[vlan.id] || defaultIconColor}>
+            {vlanIcons[vlan.id] || defaultIcon}
+          </div>
+          <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${badgeColorClasses[vlan.id] || defaultBadgeColor}`}>
+            VLAN {vlan.id}
+          </span>
+        </div>
+        <h3 className="font-semibold text-foreground text-sm mb-1">{vlan.name}</h3>
+        <p className="font-mono text-xs text-muted-foreground mb-3">{vlan.subnet}</p>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {devs.length} device{devs.length !== 1 ? "s" : ""}
+          </span>
+          <div className="flex gap-0.5">
+            {Array.from({ length: Math.min(devs.length, 8) }).map((_, i) => (
+              <div key={i} className={`h-1.5 w-1.5 rounded-full ${iconColorClasses[vlan.id] || defaultIconColor} opacity-70`} style={{ backgroundColor: "currentColor" }} />
+            ))}
+          </div>
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="min-h-screen grid-bg">
@@ -96,7 +148,6 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Global Search trigger */}
             <button
               onClick={() => setSearchOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
@@ -125,44 +176,17 @@ export default function Dashboard() {
 
       <main className="container py-8 space-y-8">
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Network className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Home VLANs</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Network className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Home VLANs</h2>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setVlanFormOpen(true)} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+              <Plus className="h-4 w-4" /> Add VLAN
+            </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {homeVlans.map((vlan) => {
-              const devs = (devices[vlan.id] || []).filter(
-                (d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP"
-              );
-              return (
-                <button
-                  key={vlan.id}
-                  onClick={() => navigate(`/vlan/${vlan.id}`)}
-                  className={`relative border rounded-lg p-4 text-left transition-all duration-200 ${vlanColorClasses[vlan.id]} cursor-pointer group`}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`${iconColorClasses[vlan.id]}`}>
-                      {vlanIcons[vlan.id]}
-                    </div>
-                    <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${badgeColorClasses[vlan.id]}`}>
-                      VLAN {vlan.id}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-foreground text-sm mb-1">{vlan.name}</h3>
-                  <p className="font-mono text-xs text-muted-foreground mb-3">{vlan.subnet}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {devs.length} device{devs.length !== 1 ? "s" : ""}
-                    </span>
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: Math.min(devs.length, 8) }).map((_, i) => (
-                        <div key={i} className={`h-1.5 w-1.5 rounded-full ${iconColorClasses[vlan.id]} opacity-70`} style={{ backgroundColor: "currentColor" }} />
-                      ))}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+            {homeVlans.map(renderVlanCard)}
           </div>
         </section>
 
@@ -173,34 +197,14 @@ export default function Dashboard() {
               <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Other Networks</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {otherVlans.map((vlan) => {
-                const devs = (devices[vlan.id] || []).filter(
-                  (d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP"
-                );
-                return (
-                  <button
-                    key={vlan.id}
-                    onClick={() => navigate(`/vlan/${vlan.id}`)}
-                    className={`relative border rounded-lg p-4 text-left transition-all duration-200 ${vlanColorClasses[vlan.id]} cursor-pointer group`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className={iconColorClasses[vlan.id]}>{vlanIcons[vlan.id]}</div>
-                      <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${badgeColorClasses[vlan.id]}`}>
-                        VLAN {vlan.id}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-foreground text-sm mb-1">{vlan.name}</h3>
-                    <p className="font-mono text-xs text-muted-foreground mb-3">{vlan.subnet}</p>
-                    <span className="text-xs text-muted-foreground">{devs.length} device{devs.length !== 1 ? "s" : ""}</span>
-                  </button>
-                );
-              })}
+              {otherVlans.map(renderVlanCard)}
             </div>
           </section>
         )}
       </main>
 
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <VlanFormDialog open={vlanFormOpen} onClose={() => setVlanFormOpen(false)} onSave={handleAddVlan} />
     </div>
   );
 }

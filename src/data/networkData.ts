@@ -1,6 +1,6 @@
 import { VlanInfo, DeviceEntry } from "@/types/network";
 
-export const vlans: VlanInfo[] = [
+export const defaultVlans: VlanInfo[] = [
   { id: 100, name: "Firewall", subnet: "172.16.100.0/25", color: "var(--vlan-firewall)" },
   { id: 101, name: "Power", subnet: "172.16.101.0/25", color: "var(--vlan-power)" },
   { id: 102, name: "Infrastructure", subnet: "172.16.102.0/25", color: "var(--vlan-infra)" },
@@ -15,6 +15,9 @@ export const vlans: VlanInfo[] = [
   { id: 111, name: "No Mold Net", subnet: "172.16.111.0/25", color: "var(--vlan-infra)" },
   { id: 112, name: "DMZ", subnet: "192.168.50.0/25", color: "var(--vlan-firewall)" },
 ];
+
+// Keep backward compat alias
+export const vlans = defaultVlans;
 
 let counter = 0;
 const uid = () => `dev-${++counter}`;
@@ -116,6 +119,7 @@ const initialDevices: Record<number, DeviceEntry[]> = {
 };
 
 const STORAGE_KEY = "warp9net-ipam-data";
+const VLANS_STORAGE_KEY = "warp9net-vlans";
 
 export function loadData(): Record<number, DeviceEntry[]> {
   try {
@@ -129,8 +133,20 @@ export function saveData(data: Record<number, DeviceEntry[]>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+export function loadVlans(): VlanInfo[] {
+  try {
+    const stored = localStorage.getItem(VLANS_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [...defaultVlans];
+}
+
+export function saveVlans(vlans: VlanInfo[]) {
+  localStorage.setItem(VLANS_STORAGE_KEY, JSON.stringify(vlans));
+}
+
 export function getVlanById(id: number): VlanInfo | undefined {
-  return vlans.find((v) => v.id === id);
+  return defaultVlans.find((v) => v.id === id);
 }
 
 /** Parse subnet string like "172.16.100.0/25" into base IP parts and host count */
@@ -171,9 +187,10 @@ export function findNextAvailableIp(subnet: string, existingDevices: DeviceEntry
 export function findIpConflict(
   ip: string,
   devices: Record<number, DeviceEntry[]>,
+  allVlans: VlanInfo[],
   excludeDeviceId?: string
 ): { vlanId: number; vlanName: string; device: DeviceEntry } | null {
-  for (const vlan of vlans) {
+  for (const vlan of allVlans) {
     const devs = devices[vlan.id] || [];
     for (const d of devs) {
       if (d.ipAddress === ip && d.id !== excludeDeviceId) {
