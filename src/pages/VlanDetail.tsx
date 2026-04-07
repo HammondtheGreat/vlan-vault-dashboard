@@ -99,6 +99,12 @@ export default function VlanDetail() {
 
   const staleCount = allDevices.filter((d) => d.device && isStale(d)).length;
 
+  const handleDeleteVlan = () => {
+    deleteVlan(vlanId);
+    toast.success(`VLAN ${vlanId} deleted`);
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen grid-bg">
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
