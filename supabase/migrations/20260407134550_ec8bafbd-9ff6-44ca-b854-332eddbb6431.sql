@@ -1,0 +1,3 @@
+
+ALTER TABLE public.devices ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT '';
+ALTER TABLE public.vlans ADD COLUMN IF NOT EXISTS icon text NOT NULL DEFAULT 'Network';
