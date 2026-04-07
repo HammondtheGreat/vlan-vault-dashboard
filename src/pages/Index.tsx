@@ -261,6 +261,18 @@ export default function Dashboard() {
             </div>
           </section>
         )}
+
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant={showAnalytics ? "default" : "outline"} onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
+            <BarChart3 className="h-4 w-4" /> Analytics
+          </Button>
+          <Button size="sm" variant={showAuditLog ? "default" : "outline"} onClick={() => setShowAuditLog(!showAuditLog)} className="gap-1.5">
+            <ScrollText className="h-4 w-4" /> Audit Log
+          </Button>
+        </div>
+
+        {showAnalytics && <DashboardAnalytics />}
+        {showAuditLog && <AuditLogPanel />}
       </main>
 
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
