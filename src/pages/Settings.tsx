@@ -1,0 +1,276 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { useAppSettings, useSmtpSettings } from "@/hooks/useAppSettings";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Settings as SettingsIcon, User, Mail, Globe, Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+
+export default function Settings() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  return (
+    <div className="min-h-screen grid-bg">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container flex items-center gap-3 py-4">
+          <button onClick={() => navigate("/")} className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center">
+            <SettingsIcon className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold tracking-tight text-foreground">Settings</h1>
+            <p className="text-xs text-muted-foreground">Configure your IPAM instance</p>
+          </div>
+        </div>
+      </header>
+
+      <main className="container py-6 max-w-2xl">
+        <Tabs defaultValue="general" className="space-y-6">
+          <TabsList className="bg-muted/50 border border-border">
+            <TabsTrigger value="general" className="gap-1.5 data-[state=active]:bg-card"><Globe className="h-3.5 w-3.5" /> General</TabsTrigger>
+            <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card"><User className="h-3.5 w-3.5" /> Profile</TabsTrigger>
+            <TabsTrigger value="smtp" className="gap-1.5 data-[state=active]:bg-card"><Mail className="h-3.5 w-3.5" /> SMTP</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general"><GeneralSettings /></TabsContent>
+          <TabsContent value="profile"><ProfileSettings user={user} /></TabsContent>
+          <TabsContent value="smtp"><SmtpSettingsPanel /></TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+}
+
+function GeneralSettings() {
+  const { settings, isLoading, save } = useAppSettings();
+  const [siteName, setSiteName] = useState("");
+  const [pageTitle, setPageTitle] = useState("");
+  const [faviconUrl, setFaviconUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setSiteName(settings.site_name);
+      setPageTitle(settings.page_title);
+      setFaviconUrl(settings.favicon_url || "");
+    }
+  }, [isLoading, settings]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await save({ site_name: siteName, page_title: pageTitle, favicon_url: faviconUrl || null });
+    document.title = pageTitle;
+    if (faviconUrl) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+      link.href = faviconUrl;
+    }
+    setSaving(false);
+  };
+
+  if (isLoading) return <SettingsCard title="General"><p className="text-muted-foreground text-sm">Loading…</p></SettingsCard>;
+
+  return (
+    <SettingsCard title="General" description="Customize your IPAM branding">
+      <FieldGroup label="Site Name" hint="Shown in the header and throughout the app">
+        <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} className="bg-background border-border font-mono" placeholder="Warp9Net IPAM" />
+      </FieldGroup>
+      <FieldGroup label="Page Title" hint="Displayed in the browser tab">
+        <Input value={pageTitle} onChange={(e) => setPageTitle(e.target.value)} className="bg-background border-border" placeholder="Warp9Net IPAM" />
+      </FieldGroup>
+      <FieldGroup label="Favicon URL" hint="URL to a .ico, .png, or .svg favicon image">
+        <Input value={faviconUrl} onChange={(e) => setFaviconUrl(e.target.value)} className="bg-background border-border font-mono text-xs" placeholder="https://example.com/favicon.ico" />
+        {faviconUrl && (
+          <div className="flex items-center gap-2 mt-2">
+            <img src={faviconUrl} alt="Favicon preview" className="h-6 w-6 rounded" onError={(e) => (e.currentTarget.style.display = "none")} />
+            <span className="text-xs text-muted-foreground">Preview</span>
+          </div>
+        )}
+      </FieldGroup>
+      <div className="pt-2">
+        <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
+          {saving ? "Saving…" : "Save Changes"}
+        </Button>
+      </div>
+    </SettingsCard>
+  );
+}
+
+function ProfileSettings({ user }: { user: any }) {
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setEmail(user.email || "");
+      supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.display_name) setDisplayName(data.display_name);
+        });
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // Update display name
+      await supabase.from("profiles").update({ display_name: displayName }).eq("user_id", user.id);
+
+      // Update email if changed
+      if (email !== user.email) {
+        const { error } = await supabase.auth.updateUser({ email });
+        if (error) throw error;
+        toast.info("Check your new email for a confirmation link");
+      }
+
+      // Update password if provided
+      if (newPassword) {
+        if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); setSaving(false); return; }
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        setNewPassword("");
+      }
+
+      toast.success("Profile updated");
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+    setSaving(false);
+  };
+
+  return (
+    <SettingsCard title="Profile" description="Manage your account information">
+      <FieldGroup label="Display Name">
+        <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="bg-background border-border" />
+      </FieldGroup>
+      <FieldGroup label="Email Address">
+        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-background border-border font-mono text-xs" />
+      </FieldGroup>
+      <FieldGroup label="New Password" hint="Leave blank to keep current password">
+        <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="bg-background border-border" placeholder="••••••••" />
+      </FieldGroup>
+      <div className="pt-2">
+        <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
+          {saving ? "Saving…" : "Save Profile"}
+        </Button>
+      </div>
+    </SettingsCard>
+  );
+}
+
+function SmtpSettingsPanel() {
+  const { settings, isLoading, save } = useSmtpSettings();
+  const [host, setHost] = useState("");
+  const [port, setPort] = useState("587");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [fromEmail, setFromEmail] = useState("");
+  const [fromName, setFromName] = useState("");
+  const [useTls, setUseTls] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setHost(settings.smtp_host);
+      setPort(String(settings.smtp_port));
+      setUsername(settings.smtp_username);
+      setPassword(settings.smtp_password);
+      setFromEmail(settings.from_email);
+      setFromName(settings.from_name);
+      setUseTls(settings.use_tls);
+    }
+  }, [isLoading, settings]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await save({
+      smtp_host: host,
+      smtp_port: Number(port) || 587,
+      smtp_username: username,
+      smtp_password: password,
+      from_email: fromEmail,
+      from_name: fromName,
+      use_tls: useTls,
+    });
+    setSaving(false);
+  };
+
+  if (isLoading) return <SettingsCard title="SMTP"><p className="text-muted-foreground text-sm">Loading…</p></SettingsCard>;
+
+  return (
+    <SettingsCard title="SMTP / Outgoing Mail" description="Configure your outgoing email server for future email alerts. For Fastmail, use smtp.fastmail.com on port 465 with TLS.">
+      <FieldGroup label="SMTP Host">
+        <Input value={host} onChange={(e) => setHost(e.target.value)} className="bg-background border-border font-mono text-xs" placeholder="smtp.fastmail.com" />
+      </FieldGroup>
+      <div className="grid grid-cols-2 gap-4">
+        <FieldGroup label="Port">
+          <Input type="number" value={port} onChange={(e) => setPort(e.target.value)} className="bg-background border-border font-mono" placeholder="587" />
+        </FieldGroup>
+        <FieldGroup label="Use TLS">
+          <div className="flex items-center gap-2 pt-2">
+            <Switch checked={useTls} onCheckedChange={setUseTls} />
+            <span className="text-xs text-muted-foreground">{useTls ? "Enabled" : "Disabled"}</span>
+          </div>
+        </FieldGroup>
+      </div>
+      <FieldGroup label="Username">
+        <Input value={username} onChange={(e) => setUsername(e.target.value)} className="bg-background border-border font-mono text-xs" placeholder="you@fastmail.com" />
+      </FieldGroup>
+      <FieldGroup label="Password">
+        <div className="relative">
+          <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="bg-background border-border font-mono text-xs pr-10" placeholder="App password" />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+      </FieldGroup>
+      <FieldGroup label="From Email">
+        <Input value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} className="bg-background border-border font-mono text-xs" placeholder="alerts@yourdomain.com" />
+      </FieldGroup>
+      <FieldGroup label="From Name">
+        <Input value={fromName} onChange={(e) => setFromName(e.target.value)} className="bg-background border-border" placeholder="Warp9Net IPAM" />
+      </FieldGroup>
+      <div className="pt-2">
+        <Button onClick={handleSave} disabled={saving} className="bg-primary text-primary-foreground">
+          {saving ? "Saving…" : "Save SMTP Settings"}
+        </Button>
+      </div>
+    </SettingsCard>
+  );
+}
+
+function SettingsCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-border bg-card/80 p-6 space-y-5">
+      <div>
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function FieldGroup({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-sm font-medium text-foreground">{label}</label>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {children}
+    </div>
+  );
+}

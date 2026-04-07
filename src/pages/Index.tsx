@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNetwork } from "@/context/NetworkContext";
 import { useAuth } from "@/context/AuthContext";
+import { useAppSettings } from "@/hooks/useAppSettings";
 import GlobalSearchDialog from "@/components/GlobalSearchDialog";
 import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import { VlanInfo } from "@/types/network";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus } from "lucide-react";
+import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -71,8 +72,19 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { devices, vlans, addVlan } = useNetwork();
   const { signOut } = useAuth();
+  const { settings } = useAppSettings();
   const [searchOpen, setSearchOpen] = useState(false);
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
+
+  // Apply page title dynamically
+  useEffect(() => {
+    document.title = settings.page_title;
+    if (settings.favicon_url) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+      link.href = settings.favicon_url;
+    }
+  }, [settings.page_title, settings.favicon_url]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -143,7 +155,7 @@ export default function Dashboard() {
               <Activity className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold tracking-tight text-foreground">Warp9Net IPAM</h1>
+              <h1 className="text-lg font-semibold tracking-tight text-foreground">{settings.site_name}</h1>
               <p className="text-xs text-muted-foreground">IP Address Management</p>
             </div>
           </div>
@@ -163,6 +175,14 @@ export default function Dashboard() {
               <span className="font-mono">{totalDevices} devices</span>
               <span className="text-border">|</span>
               <span className="font-mono">{vlans.length} VLANs</span>
+              <span className="text-border">|</span>
+              <button
+                onClick={() => navigate("/settings")}
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                <span>Settings</span>
+              </button>
               <span className="text-border">|</span>
               <button
                 onClick={signOut}
