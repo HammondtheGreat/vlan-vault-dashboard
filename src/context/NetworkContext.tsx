@@ -234,6 +234,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
           docs: d.docs,
           location: d.location,
           notes: d.notes,
+          status: d.status || "",
         });
       }
     }
