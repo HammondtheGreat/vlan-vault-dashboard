@@ -97,6 +97,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       docs: device.docs,
       location: device.location,
       notes: device.notes,
+      status: device.status || "",
     } as any);
     if (error) { toast.error(error.message); return false; }
     await logAudit("device_added", "device", device.ipAddress, { vlan_id: vlanId, device_name: device.device }, user?.id, user?.email);
