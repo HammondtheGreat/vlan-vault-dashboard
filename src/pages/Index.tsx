@@ -267,34 +267,11 @@ export default function Dashboard() {
       </header>
 
       <main className="container py-8 space-y-8">
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Network className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Home VLANs</h2>
-            </div>
-            <Button size="sm" variant="outline" onClick={() => setVlanFormOpen(true)} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
-              <Plus className="h-4 w-4" /> Add VLAN
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {homeVlans.map(renderVlanCard)}
-          </div>
-        </section>
-
-        {otherVlans.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Other Networks</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {otherVlans.map(renderVlanCard)}
-            </div>
-          </section>
-        )}
-
+        {/* Action bar */}
         <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" variant="outline" onClick={() => setVlanFormOpen(true)} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+            <Plus className="h-4 w-4" /> Add VLAN
+          </Button>
           <Button size="sm" variant={showSummary ? "default" : "outline"} onClick={() => setShowSummary(!showSummary)} className="gap-1.5">
             <List className="h-4 w-4" /> VLAN Summary
           </Button>
@@ -313,9 +290,30 @@ export default function Dashboard() {
         </div>
 
         {showSummary && <VlanSummaryTable />}
-
         {showAnalytics && <DashboardAnalytics />}
         {showAuditLog && <AuditLogPanel />}
+
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+            <Network className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Home VLANs</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {homeVlans.map(renderVlanCard)}
+          </div>
+        </section>
+
+        {otherVlans.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Other Networks</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {otherVlans.map(renderVlanCard)}
+            </div>
+          </section>
+        )}
       </main>
 
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
