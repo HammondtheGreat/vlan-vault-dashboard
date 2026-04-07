@@ -70,9 +70,9 @@ export default function Dashboard() {
   const { settings } = useAppSettings();
   const [searchOpen, setSearchOpen] = useState(false);
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showAuditLog, setShowAuditLog] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
+  const [activeView, setActiveView] = useState<"summary" | "analytics" | "audit" | null>(null);
+  const toggleView = (view: "summary" | "analytics" | "audit") =>
+    setActiveView((prev) => (prev === view ? null : view));
   // Apply page title dynamically
   useEffect(() => {
     document.title = settings.page_title;
@@ -286,14 +286,14 @@ export default function Dashboard() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setShowSummary(!showSummary)}>
-                <List className="h-4 w-4 mr-2" /> VLAN Summary {showSummary && "✓"}
+              <DropdownMenuItem onClick={() => toggleView("summary")}>
+                <List className="h-4 w-4 mr-2" /> VLAN Summary {activeView === "summary" && "✓"}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowAnalytics(!showAnalytics)}>
-                <BarChart3 className="h-4 w-4 mr-2" /> Analytics {showAnalytics && "✓"}
+              <DropdownMenuItem onClick={() => toggleView("analytics")}>
+                <BarChart3 className="h-4 w-4 mr-2" /> Analytics {activeView === "analytics" && "✓"}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowAuditLog(!showAuditLog)}>
-                <ScrollText className="h-4 w-4 mr-2" /> Audit Log {showAuditLog && "✓"}
+              <DropdownMenuItem onClick={() => toggleView("audit")}>
+                <ScrollText className="h-4 w-4 mr-2" /> Audit Log {activeView === "audit" && "✓"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/cables")}>
@@ -306,9 +306,9 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
 
-        {showSummary && <VlanSummaryTable />}
-        {showAnalytics && <DashboardAnalytics />}
-        {showAuditLog && <AuditLogPanel />}
+        {activeView === "summary" && <VlanSummaryTable />}
+        {activeView === "analytics" && <DashboardAnalytics />}
+        {activeView === "audit" && <AuditLogPanel />}
 
         <section>
           <div className="flex items-center gap-2 mb-4">
