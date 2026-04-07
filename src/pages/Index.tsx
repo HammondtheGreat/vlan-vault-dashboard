@@ -65,7 +65,7 @@ export default function Dashboard() {
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showAuditLog, setShowAuditLog] = useState(false);
-
+  const [showSummary, setShowSummary] = useState(false);
   // Apply page title dynamically
   useEffect(() => {
     document.title = settings.page_title;
