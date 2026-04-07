@@ -118,9 +118,22 @@ export default function Dashboard() {
   };
 
   const renderVlanCard = (vlan: { id: number; name: string; subnet: string }) => {
-    const devs = (devices[vlan.id] || []).filter(
+    const allDevs = devices[vlan.id] || [];
+    const devs = allDevs.filter(
       (d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP"
     );
+    // Subnet utilization
+    let usedCount = allDevs.length;
+    let totalHosts = 0;
+    let utilPct = 0;
+    try {
+      const { hostCount } = parseSubnet(vlan.subnet);
+      totalHosts = hostCount - 2; // exclude network + broadcast
+      utilPct = totalHosts > 0 ? Math.round((usedCount / totalHosts) * 100) : 0;
+    } catch {}
+
+    const utilColor = utilPct > 80 ? "bg-destructive" : utilPct > 50 ? "bg-amber-500" : "bg-emerald-500";
+
     return (
       <button
         key={vlan.id}
@@ -136,7 +149,16 @@ export default function Dashboard() {
           </span>
         </div>
         <h3 className="font-semibold text-foreground text-sm mb-1">{vlan.name}</h3>
-        <p className="font-mono text-xs text-muted-foreground mb-3">{vlan.subnet}</p>
+        <p className="font-mono text-xs text-muted-foreground mb-2">{vlan.subnet}</p>
+        <div className="mb-2">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+            <span>{usedCount}/{totalHosts} IPs used</span>
+            <span>{utilPct}%</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-muted/50 overflow-hidden">
+            <div className={`h-full rounded-full ${utilColor} transition-all`} style={{ width: `${Math.min(utilPct, 100)}%` }} />
+          </div>
+        </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">
             {devs.length} device{devs.length !== 1 ? "s" : ""}
@@ -150,6 +172,17 @@ export default function Dashboard() {
       </button>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen grid-bg flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Activity className="h-8 w-8 text-primary animate-pulse mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading IPAM data…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen grid-bg">
