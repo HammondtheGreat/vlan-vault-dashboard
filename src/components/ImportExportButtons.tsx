@@ -163,6 +163,7 @@ function parseCsvImport(text: string): ImportData {
         location: col(r, locIdx),
         notes: col(r, notesIdx),
         updatedAt: col(r, updIdx) || new Date().toISOString(),
+        status: "",
       });
     }
   }
