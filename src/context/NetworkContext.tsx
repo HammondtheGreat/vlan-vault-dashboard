@@ -158,6 +158,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       name: vlan.name,
       subnet: vlan.subnet,
       color: vlan.color,
+      icon: vlan.icon || "Network",
     } as any);
     if (error) { toast.error(error.message); return false; }
     await logAudit("vlan_added", "vlan", String(vlan.id), { name: vlan.name, subnet: vlan.subnet }, user?.id, user?.email);

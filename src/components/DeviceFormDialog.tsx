@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DeviceEntry } from "@/types/network";
+import { DeviceEntry, DEVICE_STATUSES } from "@/types/network";
 import { findNextAvailableIp } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
 import {
@@ -12,6 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Zap } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,13 +41,14 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
     docs: "",
     location: "",
     notes: "",
+    status: "",
   });
 
   useEffect(() => {
     if (device) {
-      setForm({ ipAddress: device.ipAddress, device: device.device, brand: device.brand, model: device.model, docs: device.docs, location: device.location, notes: device.notes });
+      setForm({ ipAddress: device.ipAddress, device: device.device, brand: device.brand, model: device.model, docs: device.docs, location: device.location, notes: device.notes, status: device.status || "" });
     } else {
-      setForm({ ipAddress: "", device: "", brand: "", model: "", docs: "", location: "", notes: "" });
+      setForm({ ipAddress: "", device: "", brand: "", model: "", docs: "", location: "", notes: "", status: "" });
     }
   }, [device, open]);
 
@@ -67,11 +75,11 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
     });
   };
 
-  const fields: { key: keyof Omit<DeviceEntry, "id" | "updatedAt">; label: string; mono?: boolean; placeholder?: string }[] = [
+  const fields: { key: keyof Omit<DeviceEntry, "id" | "updatedAt" | "status">; label: string; mono?: boolean; placeholder?: string }[] = [
     { key: "device", label: "Device Name", placeholder: "e.g. sw-mdf-core" },
     { key: "brand", label: "Brand", placeholder: "e.g. Juniper" },
     { key: "model", label: "Model", placeholder: "e.g. EX4300-48MP" },
-    { key: "docs", label: "Docs", placeholder: "📖 or URL" },
+    { key: "docs", label: "Docs", placeholder: "URL or description" },
     { key: "location", label: "Location", placeholder: "e.g. Garage" },
     { key: "notes", label: "Notes", placeholder: "Additional notes" },
   ];
@@ -120,6 +128,23 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
               />
             </div>
           ))}
+
+          {/* Status dropdown */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Status</Label>
+            <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v === "none" ? "" : v }))}>
+              <SelectTrigger className="bg-muted/50 border-border">
+                <SelectValue placeholder="No status" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border">
+                <SelectItem value="none">No status</SelectItem>
+                {DEVICE_STATUSES.filter(s => s !== "").map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" onClick={onClose} className="border-border text-muted-foreground hover:bg-secondary">
               Cancel
