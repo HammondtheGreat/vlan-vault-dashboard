@@ -90,6 +90,25 @@ function GeneralSettings() {
 
   return (
     <SettingsCard title="General" description="Customize your IPAM branding">
+      <FieldGroup label="Theme" hint="Switch between dark and light appearance">
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border bg-background hover:bg-muted/50 transition-colors w-full sm:w-auto"
+        >
+          {theme === "dark" ? (
+            <>
+              <Moon className="h-4 w-4 text-primary" />
+              <span className="text-sm text-foreground">Dark Mode</span>
+            </>
+          ) : (
+            <>
+              <Sun className="h-4 w-4 text-warning" />
+              <span className="text-sm text-foreground">Light Mode</span>
+            </>
+          )}
+          <span className="text-xs text-muted-foreground ml-auto">Click to switch</span>
+        </button>
+      </FieldGroup>
       <FieldGroup label="Site Name" hint="Shown in the header and throughout the app">
         <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} className="bg-background border-border font-mono" placeholder="Warp9Net IPAM" />
       </FieldGroup>
