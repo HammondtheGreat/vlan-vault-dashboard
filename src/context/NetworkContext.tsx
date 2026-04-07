@@ -50,6 +50,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
         name: v.name,
         subnet: v.subnet,
         color: v.color,
+        icon: v.icon || "Network",
       })));
     }
 
