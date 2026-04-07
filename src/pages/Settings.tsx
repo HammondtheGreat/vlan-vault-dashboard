@@ -36,11 +36,13 @@ export default function Settings() {
           <TabsList className="bg-muted/50 border border-border">
             <TabsTrigger value="general" className="gap-1.5 data-[state=active]:bg-card"><Globe className="h-3.5 w-3.5" /> General</TabsTrigger>
             <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card"><User className="h-3.5 w-3.5" /> Profile</TabsTrigger>
+            <TabsTrigger value="users" className="gap-1.5 data-[state=active]:bg-card"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>
             <TabsTrigger value="smtp" className="gap-1.5 data-[state=active]:bg-card"><Mail className="h-3.5 w-3.5" /> SMTP</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general"><GeneralSettings /></TabsContent>
           <TabsContent value="profile"><ProfileSettings user={user} /></TabsContent>
+          <TabsContent value="users"><UserManagement currentUserId={user?.id} /></TabsContent>
           <TabsContent value="smtp"><SmtpSettingsPanel /></TabsContent>
         </Tabs>
       </main>
