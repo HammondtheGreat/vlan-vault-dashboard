@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNetwork } from "@/context/NetworkContext";
-import { useNetwork } from "@/context/NetworkContext";
 import { DeviceEntry } from "@/types/network";
 import {
   Dialog,
