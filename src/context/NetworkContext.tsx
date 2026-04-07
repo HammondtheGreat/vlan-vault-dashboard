@@ -121,6 +121,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       docs: device.docs,
       location: device.location,
       notes: device.notes,
+      status: device.status || "",
       updated_at: new Date().toISOString(),
     } as any).eq("id", device.id);
     if (error) { toast.error(error.message); return false; }
