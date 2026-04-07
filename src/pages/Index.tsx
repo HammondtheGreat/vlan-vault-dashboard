@@ -105,8 +105,8 @@ export default function Dashboard() {
     0
   );
 
-  const handleAddVlan = (vlan: VlanInfo) => {
-    if (addVlan(vlan)) {
+  const handleAddVlan = async (vlan: VlanInfo) => {
+    if (await addVlan(vlan)) {
       toast.success(`VLAN ${vlan.id} (${vlan.name}) added`);
       setVlanFormOpen(false);
     }
