@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { vlans } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut } from "lucide-react";
 
 const vlanIcons: Record<number, React.ReactNode> = {
   100: <Shield className="h-5 w-5" />,
@@ -55,6 +56,7 @@ const badgeColorClasses: Record<number, string> = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { devices } = useNetwork();
+  const { signOut, user } = useAuth();
 
   const homeVlans = vlans.filter((v) => v.id >= 100 && v.id <= 110);
   const otherVlans = vlans.filter((v) => v.id > 110);
@@ -82,6 +84,14 @@ export default function Dashboard() {
             <span className="font-mono">{totalDevices} devices</span>
             <span className="text-border">|</span>
             <span className="font-mono">{vlans.length} VLANs</span>
+            <span className="text-border">|</span>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </header>
