@@ -57,7 +57,7 @@ const defaultBadgeColor = "bg-slate-500/20 text-slate-300";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { devices, vlans, addVlan, loading } = useNetwork();
+  const { devices, vlans, addVlan, updateVlan, loading } = useNetwork();
   const { signOut } = useAuth();
   const { settings } = useAppSettings();
   const [searchOpen, setSearchOpen] = useState(false);
