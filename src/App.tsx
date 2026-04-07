@@ -13,6 +13,7 @@ import Settings from "./pages/Settings.tsx";
 import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CableDrops from "./pages/CableDrops.tsx";
+import PduOutlets from "./pages/PduOutlets.tsx";
 
 const queryClient = new QueryClient();
 
