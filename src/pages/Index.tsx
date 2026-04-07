@@ -84,8 +84,8 @@ export default function Dashboard() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const homeVlans = vlans.filter((v) => v.id >= 100 && v.id <= 111);
-  const otherVlans = vlans.filter((v) => v.id > 111 || v.id < 100);
+  const homeVlans = vlans.filter((v) => v.subnet.startsWith("172.16."));
+  const otherVlans = vlans.filter((v) => !v.subnet.startsWith("172.16."));
 
   const totalDevices = Object.values(devices).reduce(
     (sum, arr) => sum + arr.filter((d) => d.device && d.device !== "GATEWAY" && d.device !== "BROADCAST" && d.device !== "DHCP").length,

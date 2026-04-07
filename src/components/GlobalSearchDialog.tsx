@@ -45,7 +45,7 @@ export default function GlobalSearchDialog({ open, onClose }: { open: boolean; o
       if (matches.length >= 50) break;
     }
     return matches;
-  }, [query, devices]);
+  }, [query, devices, vlans]);
 
   const goTo = (vlanId: number) => {
     onClose();

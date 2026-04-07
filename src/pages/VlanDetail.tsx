@@ -5,7 +5,7 @@ import { useNetwork } from "@/context/NetworkContext";
 import { DeviceEntry } from "@/types/network";
 import DeviceFormDialog from "@/components/DeviceFormDialog";
 import JunosConfigGenerator from "@/components/JunosConfigGenerator";
-import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +24,7 @@ export default function VlanDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const vlanId = Number(id);
-  const { devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan } = useNetwork();
+  const { devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan, deleteVlan } = useNetwork();
   const vlan = vlans.find((v) => v.id === vlanId);
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -32,6 +32,7 @@ export default function VlanDetail() {
   const [deleteTarget, setDeleteTarget] = useState<DeviceEntry | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState("");
+  const [deleteVlanOpen, setDeleteVlanOpen] = useState(false);
 
   if (!vlan) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">VLAN not found</div>;
 
@@ -98,6 +99,12 @@ export default function VlanDetail() {
 
   const staleCount = allDevices.filter((d) => d.device && isStale(d)).length;
 
+  const handleDeleteVlan = () => {
+    deleteVlan(vlanId);
+    toast.success(`VLAN ${vlanId} deleted`);
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen grid-bg">
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
@@ -135,6 +142,9 @@ export default function VlanDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setDeleteVlanOpen(true)} className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4" /> Delete VLAN
+            </Button>
             <Button size="sm" variant="outline" onClick={handleNextAvailable} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
               <Zap className="h-4 w-4" /> Next Available IP
             </Button>
@@ -258,6 +268,23 @@ export default function VlanDetail() {
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-secondary text-secondary-foreground border-border hover:bg-secondary/80">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={deleteVlanOpen} onOpenChange={(o) => !o && setDeleteVlanOpen(false)}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" /> Delete VLAN {vlanId}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will permanently delete VLAN {vlanId} ({vlan.name}) and all {allDevices.length} device entries. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-secondary text-secondary-foreground border-border hover:bg-secondary/80">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteVlan} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete VLAN</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
