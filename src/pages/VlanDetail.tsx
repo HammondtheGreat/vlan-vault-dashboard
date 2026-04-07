@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { vlans, findNextAvailableIp, isStale } from "@/data/networkData";
+import { findNextAvailableIp, isStale } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
 import { DeviceEntry } from "@/types/network";
 import DeviceFormDialog from "@/components/DeviceFormDialog";
@@ -24,12 +24,14 @@ export default function VlanDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const vlanId = Number(id);
+  const { devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan } = useNetwork();
   const vlan = vlans.find((v) => v.id === vlanId);
-  const { devices, addDevice, updateDevice, deleteDevice } = useNetwork();
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editDevice, setEditDevice] = useState<DeviceEntry | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeviceEntry | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState("");
 
   if (!vlan) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">VLAN not found</div>;
 
@@ -81,6 +83,19 @@ export default function VlanDetail() {
     }
   };
 
+  const handleNameEdit = () => {
+    setNameValue(vlan.name);
+    setEditingName(true);
+  };
+
+  const handleNameSave = () => {
+    if (nameValue.trim() && nameValue.trim() !== vlan.name) {
+      updateVlan(vlanId, { name: nameValue.trim() });
+      toast.success("VLAN name updated");
+    }
+    setEditingName(false);
+  };
+
   const staleCount = allDevices.filter((d) => d.device && isStale(d)).length;
 
   return (
@@ -95,9 +110,27 @@ export default function VlanDetail() {
               <Activity className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                VLAN {vlan.id} — {vlan.name}
-              </h1>
+              <div className="flex items-center gap-2">
+                {editingName ? (
+                  <Input
+                    autoFocus
+                    value={nameValue}
+                    onChange={(e) => setNameValue(e.target.value)}
+                    onBlur={handleNameSave}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleNameSave(); if (e.key === "Escape") setEditingName(false); }}
+                    className="h-7 text-lg font-semibold bg-background border-primary/40 w-48"
+                  />
+                ) : (
+                  <h1
+                    onClick={handleNameEdit}
+                    className="text-lg font-semibold tracking-tight text-foreground cursor-pointer hover:text-primary transition-colors group"
+                    title="Click to edit name"
+                  >
+                    VLAN {vlan.id} — {vlan.name}
+                    <Pencil className="inline-block ml-1.5 h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </h1>
+                )}
+              </div>
               <p className="font-mono text-xs text-muted-foreground">{vlan.subnet}</p>
             </div>
           </div>

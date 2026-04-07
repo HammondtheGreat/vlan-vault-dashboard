@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNetwork } from "@/context/NetworkContext";
-import { vlans } from "@/data/networkData";
+import { useNetwork } from "@/context/NetworkContext";
 import { DeviceEntry } from "@/types/network";
 import {
   Dialog,
