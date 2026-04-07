@@ -32,6 +32,7 @@ export default function VlanDetail() {
   const [deleteTarget, setDeleteTarget] = useState<DeviceEntry | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState("");
+  const [deleteVlanOpen, setDeleteVlanOpen] = useState(false);
 
   if (!vlan) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">VLAN not found</div>;
 
