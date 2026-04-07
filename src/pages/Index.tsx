@@ -307,6 +307,9 @@ export default function Dashboard() {
           <Button size="sm" variant="outline" onClick={() => navigate("/cables")} className="gap-1.5">
             <Cable className="h-4 w-4" /> Cable Drops
           </Button>
+          <Button size="sm" variant="outline" onClick={() => navigate("/pdu")} className="gap-1.5">
+            <Plug className="h-4 w-4" /> PDU
+          </Button>
         </div>
 
         {showSummary && <VlanSummaryTable />}
