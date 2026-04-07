@@ -57,6 +57,7 @@ export default function VlanFormDialog({ open, onClose, onSave, vlan }: VlanForm
       name: name.trim(),
       subnet: subnet.trim(),
       color: vlan?.color || defaultColors[colorIdx],
+      icon: vlan?.icon || "Network",
     });
   };
 
@@ -75,7 +76,6 @@ export default function VlanFormDialog({ open, onClose, onSave, vlan }: VlanForm
               max={4094}
               value={id}
               onChange={(e) => setId(e.target.value)}
-              disabled={isEdit}
               placeholder="e.g. 113"
               className="bg-background border-border font-mono"
             />
@@ -90,13 +90,16 @@ export default function VlanFormDialog({ open, onClose, onSave, vlan }: VlanForm
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">Subnet</label>
+            <label className="text-sm text-muted-foreground">Subnet (CIDR)</label>
             <Input
               value={subnet}
               onChange={(e) => setSubnet(e.target.value)}
               placeholder="e.g. 172.16.113.0/24"
               className="bg-background border-border font-mono"
             />
+            {isEdit && subnet !== vlan?.subnet && (
+              <p className="text-xs text-amber-400">⚠ Changing the subnet will automatically remap all device IPs to the new range.</p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} className="border-border">
