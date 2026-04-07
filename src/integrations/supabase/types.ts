@@ -169,6 +169,33 @@ export type Database = {
           },
         ]
       }
+      pdu_outlets: {
+        Row: {
+          created_at: string
+          device_name: string
+          id: string
+          notes: string
+          outlet_number: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          device_name?: string
+          id?: string
+          notes?: string
+          outlet_number: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string
+          id?: string
+          notes?: string
+          outlet_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
