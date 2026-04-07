@@ -24,7 +24,7 @@ export default function VlanDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const vlanId = Number(id);
-  const { devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan } = useNetwork();
+  const { devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan, deleteVlan } = useNetwork();
   const vlan = vlans.find((v) => v.id === vlanId);
   const [search, setSearch] = useState("");
   const [formOpen, setFormOpen] = useState(false);
