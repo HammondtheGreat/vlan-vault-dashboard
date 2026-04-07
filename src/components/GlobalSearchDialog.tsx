@@ -17,7 +17,7 @@ interface SearchResult {
 
 export default function GlobalSearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
-  const { devices } = useNetwork();
+  const { devices, vlans } = useNetwork();
   const navigate = useNavigate();
 
   useEffect(() => {
