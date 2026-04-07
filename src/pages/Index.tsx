@@ -72,8 +72,19 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { devices, vlans, addVlan } = useNetwork();
   const { signOut } = useAuth();
+  const { settings } = useAppSettings();
   const [searchOpen, setSearchOpen] = useState(false);
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
+
+  // Apply page title dynamically
+  useEffect(() => {
+    document.title = settings.page_title;
+    if (settings.favicon_url) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+      link.href = settings.favicon_url;
+    }
+  }, [settings.page_title, settings.favicon_url]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
