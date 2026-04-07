@@ -108,47 +108,51 @@ export default function VlanDetail() {
   return (
     <div className="min-h-screen grid-bg">
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container flex items-center justify-between py-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/")} className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-            <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Activity className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                {editingName ? (
-                  <Input
-                    autoFocus
-                    value={nameValue}
-                    onChange={(e) => setNameValue(e.target.value)}
-                    onBlur={handleNameSave}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleNameSave(); if (e.key === "Escape") setEditingName(false); }}
-                    className="h-7 text-lg font-semibold bg-background border-primary/40 w-48"
-                  />
-                ) : (
-                  <h1
-                    onClick={handleNameEdit}
-                    className="text-lg font-semibold tracking-tight text-foreground cursor-pointer hover:text-primary transition-colors group"
-                    title="Click to edit name"
-                  >
-                    VLAN {vlan.id} — {vlan.name}
-                    <Pencil className="inline-block ml-1.5 h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </h1>
-                )}
+        <div className="container py-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <button onClick={() => navigate("/")} className="h-8 w-8 shrink-0 rounded-md bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <div className="h-9 w-9 shrink-0 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Activity className="h-5 w-5 text-primary" />
               </div>
-              <p className="font-mono text-xs text-muted-foreground">{vlan.subnet}</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  {editingName ? (
+                    <Input
+                      autoFocus
+                      value={nameValue}
+                      onChange={(e) => setNameValue(e.target.value)}
+                      onBlur={handleNameSave}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleNameSave(); if (e.key === "Escape") setEditingName(false); }}
+                      className="h-7 text-lg font-semibold bg-background border-primary/40 w-48"
+                    />
+                  ) : (
+                    <h1
+                      onClick={handleNameEdit}
+                      className="text-base sm:text-lg font-semibold tracking-tight text-foreground cursor-pointer hover:text-primary transition-colors group truncate"
+                      title="Click to edit name"
+                    >
+                      <span className="hidden sm:inline">VLAN {vlan.id} — </span>
+                      <span className="sm:hidden">V{vlan.id}: </span>
+                      {vlan.name}
+                      <Pencil className="inline-block ml-1.5 h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h1>
+                  )}
+                </div>
+                <p className="font-mono text-xs text-muted-foreground">{vlan.subnet}</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button size="sm" variant="outline" onClick={() => setDeleteVlanOpen(true)} className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10">
-              <Trash2 className="h-4 w-4" /> Delete VLAN
+              <Trash2 className="h-4 w-4" /> <span className="hidden sm:inline">Delete VLAN</span><span className="sm:hidden">Delete</span>
             </Button>
             <Button size="sm" variant="outline" onClick={handleNextAvailable} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
-              <Zap className="h-4 w-4" /> Next Available IP
+              <Zap className="h-4 w-4" /> <span className="hidden sm:inline">Next Available IP</span><span className="sm:hidden">Next IP</span>
             </Button>
-            <Button size="sm" onClick={() => { setEditDevice(null); setFormOpen(true); }} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button size="sm" onClick={() => { setEditDevice(null); setFormOpen(true); }} className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 ml-auto">
               <Plus className="h-4 w-4" /> Add Device
             </Button>
           </div>
