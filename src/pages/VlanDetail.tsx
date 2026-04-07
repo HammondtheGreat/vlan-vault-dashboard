@@ -175,6 +175,9 @@ export default function VlanDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <Button size="sm" variant="outline" onClick={() => setVlanEditOpen(true)} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
+              <Settings2 className="h-4 w-4" /> <span className="hidden sm:inline">Edit VLAN</span><span className="sm:hidden">Edit</span>
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setDeleteVlanOpen(true)} className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10">
               <Trash2 className="h-4 w-4" /> <span className="hidden sm:inline">Delete VLAN</span><span className="sm:hidden">Delete</span>
             </Button>
