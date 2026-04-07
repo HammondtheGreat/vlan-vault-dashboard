@@ -294,7 +294,10 @@ export default function Dashboard() {
           </section>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" variant={showSummary ? "default" : "outline"} onClick={() => setShowSummary(!showSummary)} className="gap-1.5">
+            <List className="h-4 w-4" /> VLAN Summary
+          </Button>
           <Button size="sm" variant={showAnalytics ? "default" : "outline"} onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
             <BarChart3 className="h-4 w-4" /> Analytics
           </Button>
@@ -302,6 +305,8 @@ export default function Dashboard() {
             <ScrollText className="h-4 w-4" /> Audit Log
           </Button>
         </div>
+
+        {showSummary && <VlanSummaryTable />}
 
         {showAnalytics && <DashboardAnalytics />}
         {showAuditLog && <AuditLogPanel />}
