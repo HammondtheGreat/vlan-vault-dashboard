@@ -1,4 +1,4 @@
-import { VlanInfo, DeviceEntry, VlanData } from "@/types/network";
+import { VlanInfo, DeviceEntry } from "@/types/network";
 
 export const vlans: VlanInfo[] = [
   { id: 100, name: "Firewall", subnet: "172.16.100.0/25", color: "var(--vlan-firewall)" },
@@ -18,8 +18,9 @@ export const vlans: VlanInfo[] = [
 
 let counter = 0;
 const uid = () => `dev-${++counter}`;
+const now = () => new Date().toISOString();
 
-function makeDevices(vlanId: number, entries: Partial<DeviceEntry>[]): DeviceEntry[] {
+function makeDevices(_vlanId: number, entries: Partial<DeviceEntry>[]): DeviceEntry[] {
   return entries.map((e) => ({
     id: uid(),
     ipAddress: e.ipAddress || "",
@@ -29,6 +30,7 @@ function makeDevices(vlanId: number, entries: Partial<DeviceEntry>[]): DeviceEnt
     docs: e.docs || "",
     location: e.location || "",
     notes: e.notes || "",
+    updatedAt: e.updatedAt || now(),
   }));
 }
 
@@ -129,4 +131,63 @@ export function saveData(data: Record<number, DeviceEntry[]>) {
 
 export function getVlanById(id: number): VlanInfo | undefined {
   return vlans.find((v) => v.id === id);
+}
+
+/** Parse subnet string like "172.16.100.0/25" into base IP parts and host count */
+export function parseSubnet(subnet: string): { base: number[]; prefix: number; hostCount: number } {
+  const [ip, mask] = subnet.split("/");
+  const parts = ip.split(".").map(Number);
+  const prefix = Number(mask);
+  const hostCount = Math.pow(2, 32 - prefix);
+  return { base: parts, prefix, hostCount };
+}
+
+/** Convert IP string to a 32-bit number */
+export function ipToNum(ip: string): number {
+  const p = ip.split(".").map(Number);
+  return ((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]) >>> 0;
+}
+
+/** Convert 32-bit number back to IP string */
+export function numToIp(num: number): string {
+  return [(num >>> 24) & 0xff, (num >>> 16) & 0xff, (num >>> 8) & 0xff, num & 0xff].join(".");
+}
+
+/** Find the next available IP in a subnet given existing devices */
+export function findNextAvailableIp(subnet: string, existingDevices: DeviceEntry[]): string | null {
+  const { base, hostCount } = parseSubnet(subnet);
+  const baseNum = ipToNum(base.join("."));
+  const usedIps = new Set(existingDevices.map((d) => d.ipAddress));
+
+  // Skip .0 (network) and start from .2 (skip .1 gateway typically)
+  for (let i = 2; i < hostCount - 1; i++) {
+    const candidate = numToIp(baseNum + i);
+    if (!usedIps.has(candidate)) return candidate;
+  }
+  return null;
+}
+
+/** Check if an IP exists in any VLAN across the entire dataset */
+export function findIpConflict(
+  ip: string,
+  devices: Record<number, DeviceEntry[]>,
+  excludeDeviceId?: string
+): { vlanId: number; vlanName: string; device: DeviceEntry } | null {
+  for (const vlan of vlans) {
+    const devs = devices[vlan.id] || [];
+    for (const d of devs) {
+      if (d.ipAddress === ip && d.id !== excludeDeviceId) {
+        return { vlanId: vlan.id, vlanName: vlan.name, device: d };
+      }
+    }
+  }
+  return null;
+}
+
+/** Check if a device entry is stale (not updated in 30 days) */
+export function isStale(device: DeviceEntry): boolean {
+  if (!device.updatedAt) return true;
+  const updated = new Date(device.updatedAt).getTime();
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  return updated < thirtyDaysAgo;
 }
