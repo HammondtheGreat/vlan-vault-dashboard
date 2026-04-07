@@ -12,7 +12,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,22 +19,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        toast.success("Account created! Check your email to confirm, or sign in if auto-confirm is enabled.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (error) throw error;
-        navigate("/");
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) throw error;
+      navigate("/");
     } catch (err: any) {
       toast.error(err.message || "Authentication failed");
     } finally {
@@ -51,9 +40,7 @@ export default function Login() {
             <Activity className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-xl font-semibold text-foreground">Warp9Net IPAM</h1>
-          <p className="text-sm text-muted-foreground">
-            {mode === "login" ? "Sign in to your account" : "Create your account"}
-          </p>
+          <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
@@ -83,7 +70,6 @@ export default function Login() {
                 placeholder="••••••••"
                 className="pl-9 bg-muted/50 border-border"
                 required
-                minLength={6}
               />
             </div>
           </div>
@@ -93,18 +79,8 @@ export default function Login() {
             disabled={loading}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            {loading ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
+            {loading ? "Signing in..." : "Sign In"}
           </Button>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
-            >
-              {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}
-            </button>
-          </div>
         </form>
 
         <p className="text-center text-xs text-muted-foreground/60">
