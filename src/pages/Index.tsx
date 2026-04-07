@@ -56,6 +56,7 @@ const badgeColorClasses: Record<number, string> = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { devices } = useNetwork();
+  const { signOut, user } = useAuth();
 
   const homeVlans = vlans.filter((v) => v.id >= 100 && v.id <= 110);
   const otherVlans = vlans.filter((v) => v.id > 110);
