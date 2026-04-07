@@ -38,13 +38,13 @@ export default function Settings() {
         </div>
       </header>
 
-      <main className="container py-6 max-w-2xl">
+      <main className="container py-6 max-w-2xl px-4">
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="bg-muted/50 border border-border">
-            <TabsTrigger value="general" className="gap-1.5 data-[state=active]:bg-card"><Globe className="h-3.5 w-3.5" /> General</TabsTrigger>
-            <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card"><User className="h-3.5 w-3.5" /> Profile</TabsTrigger>
-            <TabsTrigger value="users" className="gap-1.5 data-[state=active]:bg-card"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>
-            <TabsTrigger value="smtp" className="gap-1.5 data-[state=active]:bg-card"><Mail className="h-3.5 w-3.5" /> SMTP</TabsTrigger>
+          <TabsList className="bg-muted/50 border border-border w-full sm:w-auto overflow-x-auto">
+            <TabsTrigger value="general" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Globe className="h-3.5 w-3.5" /> General</TabsTrigger>
+            <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><User className="h-3.5 w-3.5" /> Profile</TabsTrigger>
+            <TabsTrigger value="users" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>
+            <TabsTrigger value="smtp" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Mail className="h-3.5 w-3.5" /> SMTP</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general"><GeneralSettings /></TabsContent>
