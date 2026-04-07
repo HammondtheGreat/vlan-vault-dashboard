@@ -8,6 +8,7 @@ import GlobalSearchDialog from "@/components/GlobalSearchDialog";
 import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import DashboardAnalytics from "@/components/DashboardAnalytics";
+import VlanSummaryTable from "@/components/VlanSummaryTable";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
