@@ -143,12 +143,48 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     if (updates.name !== undefined) dbUpdates.name = updates.name;
     if (updates.subnet !== undefined) dbUpdates.subnet = updates.subnet;
     if (updates.color !== undefined) dbUpdates.color = updates.color;
+    if (updates.icon !== undefined) dbUpdates.icon = updates.icon;
     dbUpdates.updated_at = new Date().toISOString();
+
+    // Handle VLAN ID change
+    if (updates.id !== undefined && updates.id !== vlanId) {
+      const newId = updates.id;
+      const exists = vlans.some((v) => v.id === newId);
+      if (exists) { toast.error(`VLAN ${newId} already exists`); return; }
+      dbUpdates.vlan_id = newId;
+      // Update all devices to point to new VLAN ID
+      await supabase.from("devices" as any).update({ vlan_id: newId } as any).eq("vlan_id", vlanId);
+    }
+
+    // Handle subnet change — remap device IPs
+    if (updates.subnet !== undefined) {
+      const oldVlan = vlans.find((v) => v.id === vlanId);
+      if (oldVlan && oldVlan.subnet !== updates.subnet) {
+        try {
+          const oldParsed = parseSubnet(oldVlan.subnet);
+          const newParsed = parseSubnet(updates.subnet);
+          const oldBaseNum = ipToNum(oldParsed.base.join("."));
+          const newBaseNum = ipToNum(newParsed.base.join("."));
+          const vlanDevices = devices[vlanId] || [];
+          for (const dev of vlanDevices) {
+            if (dev.ipAddress) {
+              const devNum = ipToNum(dev.ipAddress);
+              const offset = devNum - oldBaseNum;
+              if (offset >= 0 && offset < newParsed.hostCount) {
+                const newIp = numToIp(newBaseNum + offset);
+                await supabase.from("devices" as any).update({ ip_address: newIp } as any).eq("id", dev.id);
+              }
+            }
+          }
+        } catch {}
+      }
+    }
+
     const { error } = await supabase.from("vlans" as any).update(dbUpdates).eq("vlan_id", vlanId);
     if (error) { toast.error(error.message); return; }
     await logAudit("vlan_updated", "vlan", String(vlanId), updates, user?.id, user?.email);
     await fetchAll();
-  }, [user, fetchAll]);
+  }, [vlans, devices, user, fetchAll]);
 
   const addVlan = useCallback(async (vlan: VlanInfo): Promise<boolean> => {
     const exists = vlans.some((v) => v.id === vlan.id);
