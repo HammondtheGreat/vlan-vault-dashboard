@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { vlans } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
+import { useAuth } from "@/context/AuthContext";
 import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity } from "lucide-react";
 
 const vlanIcons: Record<number, React.ReactNode> = {
