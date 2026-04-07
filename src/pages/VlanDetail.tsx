@@ -271,6 +271,23 @@ export default function VlanDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={deleteVlanOpen} onOpenChange={(o) => !o && setDeleteVlanOpen(false)}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" /> Delete VLAN {vlanId}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will permanently delete VLAN {vlanId} ({vlan.name}) and all {allDevices.length} device entries. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-secondary text-secondary-foreground border-border hover:bg-secondary/80">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteVlan} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete VLAN</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
