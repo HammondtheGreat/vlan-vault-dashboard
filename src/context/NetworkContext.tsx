@@ -12,6 +12,7 @@ interface NetworkContextType {
   updateVlan: (vlanId: number, updates: Partial<VlanInfo>) => void;
   addVlan: (vlan: VlanInfo) => boolean;
   deleteVlan: (vlanId: number) => void;
+  importData: (newVlans: VlanInfo[], newDevices: Record<number, DeviceEntry[]>) => void;
 }
 
 const NetworkContext = createContext<NetworkContextType | null>(null);
