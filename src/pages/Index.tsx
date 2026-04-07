@@ -125,8 +125,12 @@ export default function Dashboard() {
         className={`relative border rounded-lg p-4 text-left transition-all duration-200 ${vlanColorClasses[vlan.id] || defaultColorClass} cursor-pointer group`}
       >
         <div className="flex items-start justify-between mb-3">
-          <div className={iconColorClasses[vlan.id] || defaultIconColor}>
-            {vlanIcons[vlan.id] || defaultIcon}
+          <div className={iconColorClasses[vlan.id] || defaultIconColor} onClick={(e) => e.stopPropagation()}>
+            <IconPicker
+              value={(vlans.find(v => v.id === vlan.id) as VlanInfo)?.icon || "Network"}
+              onChange={(icon) => updateVlan(vlan.id, { icon })}
+              className={iconColorClasses[vlan.id] || defaultIconColor}
+            />
           </div>
           <span className={`text-xs font-mono px-2 py-0.5 rounded-full ${badgeColorClasses[vlan.id] || defaultBadgeColor}`}>
             VLAN {vlan.id}
