@@ -158,6 +158,7 @@ export default function Dashboard() {
               <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">⌘K</kbd>
             </button>
 
+            <ImportExportButtons />
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="font-mono">{totalDevices} devices</span>
               <span className="text-border">|</span>

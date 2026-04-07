@@ -111,8 +111,20 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const importData = useCallback((newVlans: VlanInfo[], newDevices: Record<number, DeviceEntry[]>) => {
+    setVlans(() => {
+      const sorted = [...newVlans].sort((a, b) => a.id - b.id);
+      saveVlans(sorted);
+      return sorted;
+    });
+    setDevices(() => {
+      saveData(newDevices);
+      return newDevices;
+    });
+  }, []);
+
   return (
-    <NetworkContext.Provider value={{ devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan, addVlan, deleteVlan }}>
+    <NetworkContext.Provider value={{ devices, vlans, addDevice, updateDevice, deleteDevice, updateVlan, addVlan, deleteVlan, importData }}>
       {children}
     </NetworkContext.Provider>
   );
