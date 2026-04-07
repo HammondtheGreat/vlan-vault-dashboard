@@ -9,29 +9,12 @@ import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import DashboardAnalytics from "@/components/DashboardAnalytics";
 import AuditLogPanel from "@/components/AuditLogPanel";
+import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
-import { Network, Server, Shield, Zap, HardDrive, MonitorSpeaker, Printer, Camera, Phone, Wifi, Globe, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, X } from "lucide-react";
+import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
-
-const vlanIcons: Record<number, React.ReactNode> = {
-  100: <Shield className="h-5 w-5" />,
-  101: <Zap className="h-5 w-5" />,
-  102: <Network className="h-5 w-5" />,
-  103: <HardDrive className="h-5 w-5" />,
-  104: <MonitorSpeaker className="h-5 w-5" />,
-  105: <Server className="h-5 w-5" />,
-  106: <MonitorSpeaker className="h-5 w-5" />,
-  107: <Printer className="h-5 w-5" />,
-  108: <Camera className="h-5 w-5" />,
-  109: <Phone className="h-5 w-5" />,
-  110: <Wifi className="h-5 w-5" />,
-  111: <Globe className="h-5 w-5" />,
-  112: <Shield className="h-5 w-5" />,
-};
-
-const defaultIcon = <Network className="h-5 w-5" />;
 
 const vlanColorClasses: Record<number, string> = {
   100: "border-red-500/40 bg-red-500/5 hover:bg-red-500/10",
