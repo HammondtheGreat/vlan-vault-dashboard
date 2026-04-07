@@ -142,6 +142,9 @@ export default function VlanDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setDeleteVlanOpen(true)} className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4" /> Delete VLAN
+            </Button>
             <Button size="sm" variant="outline" onClick={handleNextAvailable} className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
               <Zap className="h-4 w-4" /> Next Available IP
             </Button>
