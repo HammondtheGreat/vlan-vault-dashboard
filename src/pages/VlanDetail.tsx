@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { findNextAvailableIp, isStale } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
-import { DeviceEntry } from "@/types/network";
+import { DeviceEntry, VlanInfo } from "@/types/network";
 import DeviceFormDialog from "@/components/DeviceFormDialog";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import JunosConfigGenerator from "@/components/JunosConfigGenerator";
