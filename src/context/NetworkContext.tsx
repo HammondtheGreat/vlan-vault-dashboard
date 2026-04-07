@@ -217,7 +217,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
 
     // Insert new VLANs
     const vlanRows = newVlans.map((v) => ({
-      vlan_id: v.id, name: v.name, subnet: v.subnet, color: v.color || "var(--vlan-infra)",
+      vlan_id: v.id, name: v.name, subnet: v.subnet, color: v.color || "var(--vlan-infra)", icon: v.icon || "Network",
     }));
     await supabase.from("vlans" as any).insert(vlanRows as any);
 
