@@ -32,6 +32,7 @@ const App = () => (
                 <Route path="/vlan/:id" element={<ProtectedRoute><VlanDetail /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/cables" element={<ProtectedRoute><CableDrops /></ProtectedRoute>} />
+                <Route path="/pdu" element={<ProtectedRoute><PduOutlets /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
