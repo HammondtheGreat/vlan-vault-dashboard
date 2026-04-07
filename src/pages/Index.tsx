@@ -84,6 +84,14 @@ export default function Dashboard() {
             <span className="font-mono">{totalDevices} devices</span>
             <span className="text-border">|</span>
             <span className="font-mono">{vlans.length} VLANs</span>
+            <span className="text-border">|</span>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
       </header>
