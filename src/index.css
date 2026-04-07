@@ -63,6 +63,51 @@
     --vlan-telecom: 170 60% 45%;
     --vlan-warp9: 187 80% 48%;
   }
+
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 220 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+
+    --primary: 187 80% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 16% 30%;
+
+    --muted: 220 14% 94%;
+    --muted-foreground: 215 12% 45%;
+
+    --accent: 187 40% 92%;
+    --accent-foreground: 187 80% 30%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 20% 12%;
+
+    --border: 220 14% 85%;
+    --input: 220 14% 85%;
+    --ring: 187 80% 40%;
+
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 220 16% 30%;
+    --sidebar-primary: 187 80% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 220 16% 30%;
+    --sidebar-border: 220 14% 85%;
+    --sidebar-ring: 187 80% 40%;
+  }
 }
 
 @layer base {
@@ -90,8 +135,8 @@
 
   .grid-bg {
     background-image: 
-      linear-gradient(hsl(220 14% 18% / 0.5) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(220 14% 18% / 0.5) 1px, transparent 1px);
+      linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 }
