@@ -70,9 +70,9 @@ export default function Dashboard() {
   const { settings } = useAppSettings();
   const [searchOpen, setSearchOpen] = useState(false);
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showAuditLog, setShowAuditLog] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
+  const [activeView, setActiveView] = useState<"summary" | "analytics" | "audit" | null>(null);
+  const toggleView = (view: "summary" | "analytics" | "audit") =>
+    setActiveView((prev) => (prev === view ? null : view));
   // Apply page title dynamically
   useEffect(() => {
     document.title = settings.page_title;
