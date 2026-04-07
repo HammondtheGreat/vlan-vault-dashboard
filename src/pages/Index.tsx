@@ -8,10 +8,11 @@ import GlobalSearchDialog from "@/components/GlobalSearchDialog";
 import ImportExportButtons from "@/components/ImportExportButtons";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import DashboardAnalytics from "@/components/DashboardAnalytics";
+import VlanSummaryTable from "@/components/VlanSummaryTable";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
-import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe } from "lucide-react";
+import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -64,7 +65,7 @@ export default function Dashboard() {
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showAuditLog, setShowAuditLog] = useState(false);
-
+  const [showSummary, setShowSummary] = useState(false);
   // Apply page title dynamically
   useEffect(() => {
     document.title = settings.page_title;
@@ -293,7 +294,10 @@ export default function Dashboard() {
           </section>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" variant={showSummary ? "default" : "outline"} onClick={() => setShowSummary(!showSummary)} className="gap-1.5">
+            <List className="h-4 w-4" /> VLAN Summary
+          </Button>
           <Button size="sm" variant={showAnalytics ? "default" : "outline"} onClick={() => setShowAnalytics(!showAnalytics)} className="gap-1.5">
             <BarChart3 className="h-4 w-4" /> Analytics
           </Button>
@@ -301,6 +305,8 @@ export default function Dashboard() {
             <ScrollText className="h-4 w-4" /> Audit Log
           </Button>
         </div>
+
+        {showSummary && <VlanSummaryTable />}
 
         {showAnalytics && <DashboardAnalytics />}
         {showAuditLog && <AuditLogPanel />}
