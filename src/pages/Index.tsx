@@ -298,6 +298,22 @@ export default function Dashboard() {
             <Network className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Home VLANs</h2>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {homeVlans.map(renderVlanCard)}
+          </div>
+        </section>
+
+        {otherVlans.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Other Networks</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {otherVlans.map(renderVlanCard)}
+            </div>
+          </section>
+        )}
       </main>
 
       <GlobalSearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
