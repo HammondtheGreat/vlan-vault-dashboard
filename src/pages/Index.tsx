@@ -73,6 +73,13 @@ export default function Dashboard() {
   const [activeView, setActiveView] = useState<"summary" | "analytics" | "audit" | null>(null);
   const toggleView = (view: "summary" | "analytics" | "audit") =>
     setActiveView((prev) => (prev === view ? null : view));
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && activeView) setActiveView(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeView]);
   // Apply page title dynamically
   useEffect(() => {
     document.title = settings.page_title;
