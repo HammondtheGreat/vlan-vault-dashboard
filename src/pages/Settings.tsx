@@ -60,7 +60,7 @@ export default function Settings() {
 
 function GeneralSettings() {
   const { settings, isLoading, save } = useAppSettings();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [siteName, setSiteName] = useState("");
   const [pageTitle, setPageTitle] = useState("");
   const [faviconUrl, setFaviconUrl] = useState("");
