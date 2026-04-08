@@ -90,24 +90,27 @@ function GeneralSettings() {
 
   return (
     <SettingsCard title="General" description="Customize your IPAM branding">
-      <FieldGroup label="Theme" hint="Switch between dark and light appearance">
-        <button
-          onClick={toggleTheme}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border bg-background hover:bg-muted/50 transition-colors w-full sm:w-auto"
-        >
-          {theme === "dark" ? (
-            <>
-              <Moon className="h-4 w-4 text-primary" />
-              <span className="text-sm text-foreground">Dark Mode</span>
-            </>
-          ) : (
-            <>
-              <Sun className="h-4 w-4 text-warning" />
-              <span className="text-sm text-foreground">Light Mode</span>
-            </>
-          )}
-          <span className="text-xs text-muted-foreground ml-auto">Click to switch</span>
-        </button>
+      <FieldGroup label="Theme" hint="Choose a dark theme for the interface">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTheme(t.id)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors text-left w-full ${
+                theme === t.id
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-background hover:bg-muted/50"
+              }`}
+            >
+              <Palette className={`h-4 w-4 shrink-0 ${theme === t.id ? "text-primary" : "text-muted-foreground"}`} />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-foreground block">{t.label}</span>
+                <span className="text-xs text-muted-foreground">{t.description}</span>
+              </div>
+              {theme === t.id && <Check className="h-4 w-4 text-primary shrink-0" />}
+            </button>
+          ))}
+        </div>
       </FieldGroup>
       <FieldGroup label="Site Name" hint="Shown in the header and throughout the app">
         <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} className="bg-background border-border font-mono" placeholder="Warp9Net IPAM" />
