@@ -12,7 +12,7 @@ import VlanSummaryTable from "@/components/VlanSummaryTable";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
-import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List, Cable, Plug, ChevronDown, X } from "lucide-react";
+import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List, Cable, Plug, ChevronDown, X, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -20,8 +20,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme, THEMES } from "@/context/ThemeContext";
 import { toast } from "sonner";
 
 const vlanColorClasses: Record<number, string> = {
