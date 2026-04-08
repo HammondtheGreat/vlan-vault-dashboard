@@ -320,6 +320,19 @@ export default function Dashboard() {
               <DropdownMenuItem onClick={() => navigate("/pdu")}>
                 <Plug className="h-4 w-4 mr-2" /> PDU
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Palette className="h-4 w-4 mr-2" /> Theme
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {THEMES.map((t) => (
+                    <DropdownMenuItem key={t.id} onClick={() => setTheme(t.id)}>
+                      {t.label} {theme === t.id && "✓"}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
