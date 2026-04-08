@@ -5,43 +5,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
-  :root {
+  /* ===== Midnight — Clean & Minimal (default) ===== */
+  :root,
+  .theme-midnight {
     --background: 220 20% 7%;
     --foreground: 210 20% 92%;
-
     --card: 220 18% 10%;
     --card-foreground: 210 20% 92%;
-
     --popover: 220 18% 12%;
     --popover-foreground: 210 20% 92%;
-
     --primary: 187 80% 48%;
     --primary-foreground: 220 20% 7%;
-
     --secondary: 220 16% 16%;
     --secondary-foreground: 210 20% 85%;
-
     --muted: 220 14% 14%;
     --muted-foreground: 215 12% 55%;
-
     --accent: 187 60% 20%;
     --accent-foreground: 187 80% 70%;
-
     --destructive: 0 72% 51%;
     --destructive-foreground: 210 40% 98%;
-
     --success: 142 71% 45%;
     --success-foreground: 220 20% 7%;
-
     --warning: 38 92% 50%;
     --warning-foreground: 220 20% 7%;
-
     --border: 220 14% 18%;
     --input: 220 14% 18%;
     --ring: 187 80% 48%;
-
     --radius: 0.5rem;
-
     --sidebar-background: 220 18% 8%;
     --sidebar-foreground: 210 20% 85%;
     --sidebar-primary: 187 80% 48%;
@@ -50,7 +40,6 @@
     --sidebar-accent-foreground: 210 20% 85%;
     --sidebar-border: 220 14% 18%;
     --sidebar-ring: 187 80% 48%;
-
     --vlan-firewall: 0 72% 51%;
     --vlan-power: 38 92% 50%;
     --vlan-infra: 187 80% 48%;
@@ -64,49 +53,214 @@
     --vlan-warp9: 187 80% 48%;
   }
 
-  .light {
-    --background: 0 0% 98%;
-    --foreground: 220 20% 12%;
+  /* ===== Cyberpunk — Neon Pink & Electric Blue ===== */
+  .theme-cyberpunk {
+    --background: 270 25% 5%;
+    --foreground: 300 10% 92%;
+    --card: 270 22% 9%;
+    --card-foreground: 300 10% 92%;
+    --popover: 270 22% 11%;
+    --popover-foreground: 300 10% 92%;
+    --primary: 320 85% 55%;
+    --primary-foreground: 270 25% 5%;
+    --secondary: 270 18% 15%;
+    --secondary-foreground: 300 10% 82%;
+    --muted: 270 16% 13%;
+    --muted-foreground: 280 10% 50%;
+    --accent: 195 90% 45%;
+    --accent-foreground: 195 90% 80%;
+    --destructive: 0 80% 55%;
+    --destructive-foreground: 300 10% 98%;
+    --success: 160 70% 45%;
+    --success-foreground: 270 25% 5%;
+    --warning: 45 100% 55%;
+    --warning-foreground: 270 25% 5%;
+    --border: 270 16% 18%;
+    --input: 270 16% 18%;
+    --ring: 320 85% 55%;
+    --sidebar-background: 270 22% 7%;
+    --sidebar-foreground: 300 10% 82%;
+    --sidebar-primary: 320 85% 55%;
+    --sidebar-primary-foreground: 270 25% 5%;
+    --sidebar-accent: 270 16% 13%;
+    --sidebar-accent-foreground: 300 10% 82%;
+    --sidebar-border: 270 16% 18%;
+    --sidebar-ring: 320 85% 55%;
+  }
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 12%;
+  /* ===== Matrix — Green on Black ===== */
+  .theme-matrix {
+    --background: 120 15% 4%;
+    --foreground: 120 40% 80%;
+    --card: 120 12% 7%;
+    --card-foreground: 120 40% 80%;
+    --popover: 120 12% 9%;
+    --popover-foreground: 120 40% 80%;
+    --primary: 120 70% 45%;
+    --primary-foreground: 120 15% 4%;
+    --secondary: 120 10% 12%;
+    --secondary-foreground: 120 30% 70%;
+    --muted: 120 8% 10%;
+    --muted-foreground: 120 15% 42%;
+    --accent: 120 50% 18%;
+    --accent-foreground: 120 60% 65%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 120 40% 95%;
+    --success: 120 70% 45%;
+    --success-foreground: 120 15% 4%;
+    --warning: 50 90% 50%;
+    --warning-foreground: 120 15% 4%;
+    --border: 120 10% 15%;
+    --input: 120 10% 15%;
+    --ring: 120 70% 45%;
+    --sidebar-background: 120 12% 5%;
+    --sidebar-foreground: 120 30% 70%;
+    --sidebar-primary: 120 70% 45%;
+    --sidebar-primary-foreground: 120 15% 4%;
+    --sidebar-accent: 120 8% 10%;
+    --sidebar-accent-foreground: 120 30% 70%;
+    --sidebar-border: 120 10% 15%;
+    --sidebar-ring: 120 70% 45%;
+  }
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 12%;
+  /* ===== Dracula — Classic Purple ===== */
+  .theme-dracula {
+    --background: 231 15% 11%;
+    --foreground: 60 30% 92%;
+    --card: 231 15% 14%;
+    --card-foreground: 60 30% 92%;
+    --popover: 231 15% 16%;
+    --popover-foreground: 60 30% 92%;
+    --primary: 265 89% 65%;
+    --primary-foreground: 231 15% 8%;
+    --secondary: 231 12% 18%;
+    --secondary-foreground: 60 20% 80%;
+    --muted: 231 10% 16%;
+    --muted-foreground: 230 10% 48%;
+    --accent: 135 60% 45%;
+    --accent-foreground: 135 60% 75%;
+    --destructive: 0 100% 67%;
+    --destructive-foreground: 60 30% 98%;
+    --success: 135 60% 45%;
+    --success-foreground: 231 15% 8%;
+    --warning: 65 92% 68%;
+    --warning-foreground: 231 15% 8%;
+    --border: 231 12% 20%;
+    --input: 231 12% 20%;
+    --ring: 265 89% 65%;
+    --sidebar-background: 231 15% 9%;
+    --sidebar-foreground: 60 20% 80%;
+    --sidebar-primary: 265 89% 65%;
+    --sidebar-primary-foreground: 231 15% 8%;
+    --sidebar-accent: 231 10% 16%;
+    --sidebar-accent-foreground: 60 20% 80%;
+    --sidebar-border: 231 12% 20%;
+    --sidebar-ring: 265 89% 65%;
+  }
 
-    --primary: 187 80% 40%;
-    --primary-foreground: 0 0% 100%;
+  /* ===== Solarized Dark — Warm & Easy ===== */
+  .theme-solarized {
+    --background: 192 100% 5%;
+    --foreground: 44 10% 72%;
+    --card: 192 80% 8%;
+    --card-foreground: 44 10% 72%;
+    --popover: 192 70% 10%;
+    --popover-foreground: 44 10% 72%;
+    --primary: 175 60% 45%;
+    --primary-foreground: 192 100% 5%;
+    --secondary: 192 40% 14%;
+    --secondary-foreground: 44 10% 65%;
+    --muted: 192 35% 12%;
+    --muted-foreground: 195 15% 42%;
+    --accent: 18 70% 50%;
+    --accent-foreground: 18 70% 75%;
+    --destructive: 1 72% 50%;
+    --destructive-foreground: 44 10% 95%;
+    --success: 68 100% 32%;
+    --success-foreground: 192 100% 5%;
+    --warning: 45 100% 50%;
+    --warning-foreground: 192 100% 5%;
+    --border: 192 30% 16%;
+    --input: 192 30% 16%;
+    --ring: 175 60% 45%;
+    --sidebar-background: 192 80% 6%;
+    --sidebar-foreground: 44 10% 65%;
+    --sidebar-primary: 175 60% 45%;
+    --sidebar-primary-foreground: 192 100% 5%;
+    --sidebar-accent: 192 35% 12%;
+    --sidebar-accent-foreground: 44 10% 65%;
+    --sidebar-border: 192 30% 16%;
+    --sidebar-ring: 175 60% 45%;
+  }
 
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 16% 30%;
+  /* ===== Nord — Cool Arctic Blues ===== */
+  .theme-nord {
+    --background: 220 16% 12%;
+    --foreground: 219 28% 85%;
+    --card: 220 16% 15%;
+    --card-foreground: 219 28% 85%;
+    --popover: 220 16% 17%;
+    --popover-foreground: 219 28% 85%;
+    --primary: 193 43% 56%;
+    --primary-foreground: 220 16% 10%;
+    --secondary: 220 14% 20%;
+    --secondary-foreground: 219 20% 75%;
+    --muted: 220 12% 18%;
+    --muted-foreground: 219 12% 48%;
+    --accent: 179 25% 48%;
+    --accent-foreground: 179 30% 75%;
+    --destructive: 354 42% 56%;
+    --destructive-foreground: 219 28% 95%;
+    --success: 92 28% 52%;
+    --success-foreground: 220 16% 10%;
+    --warning: 40 71% 63%;
+    --warning-foreground: 220 16% 10%;
+    --border: 220 14% 22%;
+    --input: 220 14% 22%;
+    --ring: 193 43% 56%;
+    --sidebar-background: 220 16% 10%;
+    --sidebar-foreground: 219 20% 75%;
+    --sidebar-primary: 193 43% 56%;
+    --sidebar-primary-foreground: 220 16% 10%;
+    --sidebar-accent: 220 12% 18%;
+    --sidebar-accent-foreground: 219 20% 75%;
+    --sidebar-border: 220 14% 22%;
+    --sidebar-ring: 193 43% 56%;
+  }
 
-    --muted: 220 14% 94%;
-    --muted-foreground: 215 12% 45%;
-
-    --accent: 187 40% 92%;
-    --accent-foreground: 187 80% 30%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 71% 40%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 20% 12%;
-
-    --border: 220 14% 85%;
-    --input: 220 14% 85%;
-    --ring: 187 80% 40%;
-
-    --sidebar-background: 0 0% 97%;
-    --sidebar-foreground: 220 16% 30%;
-    --sidebar-primary: 187 80% 40%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 220 16% 30%;
-    --sidebar-border: 220 14% 85%;
-    --sidebar-ring: 187 80% 40%;
+  /* ===== Amber Terminal — Retro CRT ===== */
+  .theme-amber {
+    --background: 30 10% 4%;
+    --foreground: 38 90% 60%;
+    --card: 30 10% 7%;
+    --card-foreground: 38 90% 60%;
+    --popover: 30 10% 9%;
+    --popover-foreground: 38 90% 60%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 30 10% 4%;
+    --secondary: 30 8% 12%;
+    --secondary-foreground: 38 60% 50%;
+    --muted: 30 6% 10%;
+    --muted-foreground: 35 20% 35%;
+    --accent: 38 70% 22%;
+    --accent-foreground: 38 80% 60%;
+    --destructive: 0 70% 48%;
+    --destructive-foreground: 38 90% 95%;
+    --success: 38 92% 50%;
+    --success-foreground: 30 10% 4%;
+    --warning: 50 90% 55%;
+    --warning-foreground: 30 10% 4%;
+    --border: 30 8% 15%;
+    --input: 30 8% 15%;
+    --ring: 38 92% 50%;
+    --sidebar-background: 30 10% 5%;
+    --sidebar-foreground: 38 60% 50%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 30 10% 4%;
+    --sidebar-accent: 30 6% 10%;
+    --sidebar-accent-foreground: 38 60% 50%;
+    --sidebar-border: 30 8% 15%;
+    --sidebar-ring: 38 92% 50%;
   }
 }
 
