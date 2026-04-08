@@ -72,6 +72,7 @@ export default function Dashboard() {
   const { devices, vlans, addVlan, updateVlan, loading } = useNetwork();
   const { signOut } = useAuth();
   const { settings } = useAppSettings();
+  const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [vlanFormOpen, setVlanFormOpen] = useState(false);
   const [activeView, setActiveView] = useState<"summary" | "analytics" | "audit" | null>(null);
