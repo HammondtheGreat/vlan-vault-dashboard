@@ -5,8 +5,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
+  :root {
+    --radius: 0.5rem;
+    --vlan-firewall: 0 72% 51%;
+    --vlan-power: 38 92% 50%;
+    --vlan-infra: 187 80% 48%;
+    --vlan-storage: 262 60% 55%;
+    --vlan-virt: 142 71% 45%;
+    --vlan-servers: 210 80% 55%;
+    --vlan-kvm: 330 70% 55%;
+    --vlan-printers: 24 80% 55%;
+    --vlan-cameras: 350 70% 50%;
+    --vlan-telecom: 170 60% 45%;
+    --vlan-warp9: 187 80% 48%;
+  }
+
   /* ===== Midnight — Clean & Minimal (default) ===== */
-  :root,
+  :root:not([class*="theme-"]),
   .theme-midnight {
     --background: 220 20% 7%;
     --foreground: 210 20% 92%;
@@ -31,7 +46,6 @@
     --border: 220 14% 18%;
     --input: 220 14% 18%;
     --ring: 187 80% 48%;
-    --radius: 0.5rem;
     --sidebar-background: 220 18% 8%;
     --sidebar-foreground: 210 20% 85%;
     --sidebar-primary: 187 80% 48%;
@@ -40,17 +54,6 @@
     --sidebar-accent-foreground: 210 20% 85%;
     --sidebar-border: 220 14% 18%;
     --sidebar-ring: 187 80% 48%;
-    --vlan-firewall: 0 72% 51%;
-    --vlan-power: 38 92% 50%;
-    --vlan-infra: 187 80% 48%;
-    --vlan-storage: 262 60% 55%;
-    --vlan-virt: 142 71% 45%;
-    --vlan-servers: 210 80% 55%;
-    --vlan-kvm: 330 70% 55%;
-    --vlan-printers: 24 80% 55%;
-    --vlan-cameras: 350 70% 50%;
-    --vlan-telecom: 170 60% 45%;
-    --vlan-warp9: 187 80% 48%;
   }
 
   /* ===== Cyberpunk — Neon Pink & Electric Blue ===== */
