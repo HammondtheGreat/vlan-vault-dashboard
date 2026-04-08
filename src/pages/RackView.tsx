@@ -95,12 +95,13 @@ export default function RackView() {
   };
 
   const addItem = async () => {
-    const device = devices.find(d => d.id === form.device_id);
+    const isBlank = form.device_id === "__blank__";
+    const device = !isBlank ? devices.find(d => d.id === form.device_id) : null;
     const { error } = await supabase.from("rack_items" as any).insert({
-      device_id: form.device_id || null,
+      device_id: isBlank ? null : (form.device_id || null),
       start_u: form.start_u,
       u_size: form.u_size,
-      label: form.label || (device ? device.device_name : ""),
+      label: form.label || (device ? device.device_name : "Rack Blank"),
       notes: form.notes,
     } as any);
     if (error) { toast.error(error.message); return; }
