@@ -14,6 +14,7 @@ import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CableDrops from "./pages/CableDrops.tsx";
 import PduOutlets from "./pages/PduOutlets.tsx";
+import WirelessNetworks from "./pages/WirelessNetworks.tsx";
 
 const queryClient = new QueryClient();
 
