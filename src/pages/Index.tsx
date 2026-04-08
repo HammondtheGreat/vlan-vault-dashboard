@@ -282,7 +282,13 @@ export default function Dashboard() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" className="gap-1.5">
-                <Menu className="h-4 w-4" /> Views <ChevronDown className="h-3 w-3 ml-0.5 opacity-50" />
+                <Menu className="h-4 w-4" /> Views
+                {activeView && (
+                  <span className="ml-1 text-xs text-primary font-medium">
+                    ({activeView === "summary" ? "Summary" : activeView === "analytics" ? "Analytics" : "Audit Log"})
+                  </span>
+                )}
+                <ChevronDown className="h-3 w-3 ml-0.5 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
