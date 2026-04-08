@@ -18,9 +18,19 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
+const SETTINGS_TABS = [
+  { id: "general", label: "General", icon: Globe },
+  { id: "profile", label: "Profile", icon: User },
+  { id: "users", label: "Users", icon: Users },
+  { id: "smtp", label: "SMTP", icon: Mail },
+] as const;
+
+type SettingsTab = (typeof SETTINGS_TABS)[number]["id"];
+
 export default function Settings() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   return (
     <div className="min-h-screen grid-bg">
@@ -39,20 +49,38 @@ export default function Settings() {
         </div>
       </header>
 
-      <main className="container py-6 max-w-2xl px-4">
-        <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="bg-muted/50 border border-border w-full sm:w-auto overflow-x-auto">
-            <TabsTrigger value="general" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Globe className="h-3.5 w-3.5" /> General</TabsTrigger>
-            <TabsTrigger value="profile" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><User className="h-3.5 w-3.5" /> Profile</TabsTrigger>
-            <TabsTrigger value="users" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>
-            <TabsTrigger value="smtp" className="gap-1.5 data-[state=active]:bg-card text-xs sm:text-sm"><Mail className="h-3.5 w-3.5" /> SMTP</TabsTrigger>
-          </TabsList>
+      <main className="container py-6 max-w-3xl px-4">
+        <div className="flex flex-col sm:flex-row gap-6">
+          {/* Sidebar nav */}
+          <nav className="flex sm:flex-col gap-1 sm:w-44 shrink-0 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0">
+            {SETTINGS_TABS.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors",
+                    activeTab === tab.id
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
 
-          <TabsContent value="general"><GeneralSettings /></TabsContent>
-          <TabsContent value="profile"><ProfileSettings user={user} /></TabsContent>
-          <TabsContent value="users"><UserManagement currentUserId={user?.id} /></TabsContent>
-          <TabsContent value="smtp"><SmtpSettingsPanel /></TabsContent>
-        </Tabs>
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {activeTab === "general" && <GeneralSettings />}
+            {activeTab === "profile" && <ProfileSettings user={user} />}
+            {activeTab === "users" && <UserManagement currentUserId={user?.id} />}
+            {activeTab === "smtp" && <SmtpSettingsPanel />}
+          </div>
+        </div>
       </main>
     </div>
   );
