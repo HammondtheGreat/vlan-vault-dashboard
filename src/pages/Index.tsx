@@ -312,9 +312,30 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
 
-        {activeView === "summary" && <VlanSummaryTable />}
-        {activeView === "analytics" && <DashboardAnalytics />}
-        {activeView === "audit" && <AuditLogPanel />}
+        {activeView === "summary" && (
+          <div className="relative">
+            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-7 w-7" onClick={() => setActiveView(null)}>
+              <X className="h-4 w-4" />
+            </Button>
+            <VlanSummaryTable />
+          </div>
+        )}
+        {activeView === "analytics" && (
+          <div className="relative">
+            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-7 w-7" onClick={() => setActiveView(null)}>
+              <X className="h-4 w-4" />
+            </Button>
+            <DashboardAnalytics />
+          </div>
+        )}
+        {activeView === "audit" && (
+          <div className="relative">
+            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-7 w-7" onClick={() => setActiveView(null)}>
+              <X className="h-4 w-4" />
+            </Button>
+            <AuditLogPanel />
+          </div>
+        )}
 
         <section>
           <div className="flex items-center gap-2 mb-4">
