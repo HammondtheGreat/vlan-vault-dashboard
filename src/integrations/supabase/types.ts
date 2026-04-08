@@ -223,6 +223,47 @@ export type Database = {
         }
         Relationships: []
       }
+      rack_items: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          id: string
+          label: string
+          notes: string
+          start_u: number
+          u_size: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          label?: string
+          notes?: string
+          start_u: number
+          u_size?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          label?: string
+          notes?: string
+          start_u?: number
+          u_size?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rack_items_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smtp_settings: {
         Row: {
           created_at: string
