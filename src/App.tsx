@@ -14,6 +14,7 @@ import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import CableDrops from "./pages/CableDrops.tsx";
 import PduOutlets from "./pages/PduOutlets.tsx";
+import WirelessNetworks from "./pages/WirelessNetworks.tsx";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/cables" element={<ProtectedRoute><CableDrops /></ProtectedRoute>} />
                 <Route path="/pdu" element={<ProtectedRoute><PduOutlets /></ProtectedRoute>} />
+                <Route path="/wireless" element={<ProtectedRoute><WirelessNetworks /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
