@@ -323,6 +323,9 @@ export default function Dashboard() {
               <DropdownMenuItem onClick={() => navigate("/wireless")}>
                 <Wifi className="h-4 w-4 mr-2" /> Wireless Networks
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/rack")}>
+                <Server className="h-4 w-4 mr-2" /> Server Rack
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
