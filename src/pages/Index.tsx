@@ -320,6 +320,9 @@ export default function Dashboard() {
               <DropdownMenuItem onClick={() => navigate("/pdu")}>
                 <Plug className="h-4 w-4 mr-2" /> PDU
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/wireless")}>
+                <Wifi className="h-4 w-4 mr-2" /> Wireless Networks
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
