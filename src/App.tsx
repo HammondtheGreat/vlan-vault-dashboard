@@ -34,6 +34,7 @@ const App = () => (
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/cables" element={<ProtectedRoute><CableDrops /></ProtectedRoute>} />
                 <Route path="/pdu" element={<ProtectedRoute><PduOutlets /></ProtectedRoute>} />
+                <Route path="/wireless" element={<ProtectedRoute><WirelessNetworks /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
