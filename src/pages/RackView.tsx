@@ -245,13 +245,18 @@ export default function RackView() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Link to IPAM Device (optional)</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Type</label>
               <Select value={form.device_id} onValueChange={(v) => {
-                const dev = devices.find(d => d.id === v);
-                setForm({ ...form, device_id: v, label: dev?.device_name || form.label });
+                if (v === "__blank__") {
+                  setForm({ ...form, device_id: "__blank__", label: "Rack Blank" });
+                } else {
+                  const dev = devices.find(d => d.id === v);
+                  setForm({ ...form, device_id: v, label: dev?.device_name || form.label });
+                }
               }}>
-                <SelectTrigger><SelectValue placeholder="Select a device…" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select a device or blank…" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__blank__">🔲 Rack Blank</SelectItem>
                   {devices.map(d => (
                     <SelectItem key={d.id} value={d.id}>{d.device_name} ({d.ip_address})</SelectItem>
                   ))}
