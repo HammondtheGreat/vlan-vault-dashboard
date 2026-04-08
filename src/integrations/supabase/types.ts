@@ -298,6 +298,39 @@ export type Database = {
         }
         Relationships: []
       }
+      wireless_networks: {
+        Row: {
+          created_at: string
+          id: string
+          is_hidden: boolean
+          notes: string
+          password: string
+          sort_order: number
+          ssid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          notes?: string
+          password?: string
+          sort_order?: number
+          ssid?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_hidden?: boolean
+          notes?: string
+          password?: string
+          sort_order?: number
+          ssid?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
