@@ -1,20 +1,72 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNetwork } from "@/context/NetworkContext";
 import { useAppSettings } from "@/hooks/useAppSettings";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+
+interface RackItem {
+  id: string;
+  device_id: string | null;
+  start_u: number;
+  u_size: number;
+  label: string;
+  notes: string;
+}
+
+interface RackDevice {
+  id: string;
+  device_name: string;
+  brand: string;
+  model: string;
+  ip_address: string;
+}
+
+const TOTAL_U = 22;
 
 export default function PrintView() {
   const { vlans, devices } = useNetwork();
   const { settings } = useAppSettings();
   const navigate = useNavigate();
+  const [rackItems, setRackItems] = useState<RackItem[]>([]);
+  const [rackDevices, setRackDevices] = useState<RackDevice[]>([]);
 
   useEffect(() => {
     document.title = `${settings.site_name} — Print View`;
   }, [settings.site_name]);
 
+  const fetchRackData = useCallback(async () => {
+    const [rackRes, devRes] = await Promise.all([
+      supabase.from("rack_items" as any).select("*").order("start_u"),
+      supabase.from("devices").select("id, device_name, brand, model, ip_address"),
+    ]);
+    if (rackRes.data) setRackItems(rackRes.data as any);
+    if (devRes.data) setRackDevices(devRes.data as RackDevice[]);
+  }, []);
+
+  useEffect(() => { fetchRackData(); }, [fetchRackData]);
+
   const handlePrint = () => window.print();
+
+  // Build rack slot map
+  const occupiedSlots = new Map<number, RackItem>();
+  for (const item of rackItems) {
+    for (let u = item.start_u; u < item.start_u + item.u_size; u++) {
+      occupiedSlots.set(u, item);
+    }
+  }
+
+  const getDeviceForItem = (item: RackItem) =>
+    item.device_id ? rackDevices.find((d) => d.id === item.device_id) : null;
+
+  // Build rack rows for print
+  const rackRows: { u: number; item: RackItem | null; isStart: boolean }[] = [];
+  for (let u = TOTAL_U; u >= 1; u--) {
+    const item = occupiedSlots.get(u) || null;
+    const isStart = item ? item.start_u === u : false;
+    rackRows.push({ u, item, isStart });
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -37,6 +89,7 @@ export default function PrintView() {
           </p>
         </div>
 
+        {/* VLAN sections */}
         {vlans.map((vlan) => {
           const allDevs = devices[vlan.id] || [];
           const devs = allDevs.filter(
@@ -91,6 +144,71 @@ export default function PrintView() {
             </div>
           );
         })}
+
+        {/* 22U Rack Layout */}
+        <div className="mt-10 print:mt-6 print:break-before-page">
+          <div className="flex items-baseline gap-2 mb-3 border-b-2 border-foreground/20 print:border-black/30 pb-1">
+            <h2 className="text-lg font-bold text-foreground print:text-black">22U Server Rack</h2>
+            <span className="text-xs text-muted-foreground print:text-gray-500 ml-auto">
+              {rackItems.length} item{rackItems.length !== 1 ? "s" : ""} installed
+            </span>
+          </div>
+
+          <table className="w-full text-sm border-collapse border border-border print:border-gray-400">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground print:text-gray-600 bg-muted/30 print:bg-gray-100">
+                <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300 w-12 text-center">U</th>
+                <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Device / Label</th>
+                <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Size</th>
+                <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Brand / Model</th>
+                <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">IP</th>
+                <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rackRows.map(({ u, item, isStart }) => {
+                // Skip non-start rows of multi-U items
+                if (item && !isStart) return null;
+
+                const device = item ? getDeviceForItem(item) : null;
+                const isBlank = item && !item.device_id;
+
+                return (
+                  <tr
+                    key={u}
+                    className={`border border-border print:border-gray-300 text-foreground print:text-black ${
+                      isBlank ? "bg-muted/20 print:bg-gray-50" : ""
+                    }`}
+                  >
+                    <td className="py-1.5 px-2 text-center font-mono text-xs border-r border-border print:border-gray-300">
+                      {item && item.u_size > 1 ? `${u}–${u + item.u_size - 1}` : u}
+                    </td>
+                    <td className="py-1.5 px-2 font-medium">
+                      {item
+                        ? device
+                          ? device.device_name
+                          : item.label || "(blank)"
+                        : <span className="text-muted-foreground print:text-gray-400 italic">empty</span>
+                      }
+                    </td>
+                    <td className="py-1.5 px-2 font-mono text-xs">
+                      {item ? `${item.u_size}U` : "—"}
+                    </td>
+                    <td className="py-1.5 px-2 text-xs">
+                      {device ? `${device.brand} ${device.model}`.trim() || "—" : "—"}
+                    </td>
+                    <td className="py-1.5 px-2 font-mono text-xs">
+                      {device ? device.ip_address : "—"}
+                    </td>
+                    <td className="py-1.5 px-2 text-xs text-muted-foreground print:text-gray-500">
+                      {item?.notes || "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
