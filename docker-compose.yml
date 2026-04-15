@@ -24,7 +24,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   # ── Node.js API ─────────────────────────────────────────────
   api:
@@ -55,7 +55,8 @@ services:
     ports:
       - "4242:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   db-data:
