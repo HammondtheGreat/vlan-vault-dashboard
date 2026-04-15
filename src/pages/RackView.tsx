@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { Activity, ArrowLeft, Server, Plus, Trash2, X, Save } from "lucide-react";
+import { Activity, ArrowLeft, Server, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DraggableRackItem, U_SIZE_COLORS } from "@/components/rack/DraggableRackItem";
+import { EmptyRackSlot } from "@/components/rack/RackSlot";
 
 interface RackItem {
   id: string;
@@ -38,14 +41,6 @@ interface Device {
 
 const TOTAL_U = 22;
 
-const U_SIZE_COLORS: Record<number, string> = {
-  1: "bg-primary/20 border-primary/40",
-  2: "bg-blue-500/20 border-blue-500/40",
-  3: "bg-purple-500/20 border-purple-500/40",
-  4: "bg-amber-500/20 border-amber-500/40",
-  5: "bg-green-500/20 border-green-500/40",
-};
-
 export default function RackView() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -55,6 +50,10 @@ export default function RackView() {
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<RackItem | null>(null);
   const [form, setForm] = useState({ device_id: "", start_u: 1, u_size: 1, label: "", notes: "" });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const fetchData = useCallback(async () => {
     const [rackRes, devRes] = await Promise.all([
@@ -77,10 +76,17 @@ export default function RackView() {
     }
   });
 
-  const getAvailableStartUs = () => {
+  const getAvailableStartUs = (excludeItemId?: string) => {
+    const excluded = new Set<number>();
+    rackItems.forEach(item => {
+      if (item.id === excludeItemId) return;
+      for (let u = item.start_u; u < item.start_u + item.u_size; u++) {
+        excluded.add(u);
+      }
+    });
     const available: number[] = [];
     for (let u = 1; u <= TOTAL_U; u++) {
-      if (!occupiedSlots.has(u)) available.push(u);
+      if (!excluded.has(u)) available.push(u);
     }
     return available;
   };
@@ -92,6 +98,54 @@ export default function RackView() {
       max++;
     }
     return Math.min(max, 5);
+  };
+
+  const canFitAt = (startU: number, uSize: number, excludeItemId: string) => {
+    const excluded = new Set<number>();
+    rackItems.forEach(item => {
+      if (item.id === excludeItemId) return;
+      for (let u = item.start_u; u < item.start_u + item.u_size; u++) {
+        excluded.add(u);
+      }
+    });
+    for (let u = startU; u < startU + uSize; u++) {
+      if (u > TOTAL_U || excluded.has(u)) return false;
+    }
+    return true;
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const draggedItem = active.data.current?.item as RackItem;
+    if (!draggedItem) return;
+
+    // Extract target U from droppable id: "slot-{u}"
+    const targetU = over.data.current?.uPosition as number;
+    if (targetU == null || targetU === draggedItem.start_u) return;
+
+    if (!canFitAt(targetU, draggedItem.u_size, draggedItem.id)) {
+      toast.error("Not enough space at that position");
+      return;
+    }
+
+    // Optimistic update
+    setRackItems(prev =>
+      prev.map(ri => ri.id === draggedItem.id ? { ...ri, start_u: targetU } : ri)
+    );
+
+    const { error } = await supabase
+      .from("rack_items" as any)
+      .update({ start_u: targetU } as any)
+      .eq("id", draggedItem.id);
+
+    if (error) {
+      toast.error(error.message);
+      fetchData(); // revert
+    } else {
+      toast.success(`Moved "${draggedItem.label}" to U${targetU}`);
+    }
   };
 
   const addItem = async () => {
@@ -130,7 +184,6 @@ export default function RackView() {
     );
   }
 
-  // Build rack slots from bottom (U1) to top (U22)
   const renderRack = () => {
     const rows: React.ReactNode[] = [];
     let u = TOTAL_U;
@@ -139,52 +192,22 @@ export default function RackView() {
       const item = rackItems.find(ri => ri.start_u === u);
       if (item) {
         const device = item.device_id ? devices.find(d => d.id === item.device_id) : null;
-        const colorClass = U_SIZE_COLORS[item.u_size] || U_SIZE_COLORS[1];
         rows.push(
-          <div
+          <DraggableRackItem
             key={`item-${item.id}`}
-            className={cn(
-              "border rounded-md flex items-center gap-3 px-3 group cursor-pointer transition-colors hover:brightness-125",
-              colorClass
-            )}
-            style={{ height: `${item.u_size * 40}px` }}
+            item={item}
+            device={device}
             onClick={() => setDeleteTarget(item)}
-          >
-            <span className="text-xs font-mono text-muted-foreground w-12 shrink-0">
-              U{item.start_u}{item.u_size > 1 ? `–${item.start_u + item.u_size - 1}` : ""}
-            </span>
-            <Server className="h-4 w-4 text-foreground/70 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium text-foreground truncate block">
-                {item.label || "Unnamed"}
-              </span>
-              {device && (
-                <span className="text-xs text-muted-foreground truncate block">
-                  {device.brand} {device.model} · {device.ip_address}
-                </span>
-              )}
-            </div>
-            <span className="text-xs text-muted-foreground shrink-0">{item.u_size}U</span>
-          </div>
+          />
         );
         u -= item.u_size;
       } else {
-        // Check if this slot is occupied by a multi-U item starting below
         const covering = rackItems.find(ri => u >= ri.start_u && u < ri.start_u + ri.u_size);
         if (covering) {
           u--;
           continue;
         }
-        rows.push(
-          <div
-            key={`empty-${u}`}
-            className="border border-dashed border-border/40 rounded-md flex items-center px-3 text-muted-foreground/40"
-            style={{ height: "40px" }}
-          >
-            <span className="text-xs font-mono w-12">U{u}</span>
-            <span className="text-xs italic">Empty</span>
-          </div>
-        );
+        rows.push(<EmptyRackSlot key={`empty-${u}`} uPosition={u} />);
         u--;
       }
     }
@@ -220,12 +243,13 @@ export default function RackView() {
       </header>
 
       <main className="container py-6 max-w-xl">
-        {/* Rack visualization */}
-        <div className="rounded-lg border border-border bg-card p-4">
-          <div className="flex flex-col gap-1">
-            {renderRack()}
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="flex flex-col gap-1">
+              {renderRack()}
+            </div>
           </div>
-        </div>
+        </DndContext>
 
         {/* Legend */}
         <div className="flex flex-wrap gap-3 mt-4 text-xs text-muted-foreground">
@@ -236,6 +260,7 @@ export default function RackView() {
             </div>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground/60 mt-2">Drag the grip handle to reposition items · Click an item to remove it</p>
       </main>
 
       {/* Add Dialog */}
