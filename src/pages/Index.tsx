@@ -316,7 +316,6 @@ export default function Dashboard() {
               <DropdownMenuItem onClick={() => navigate("/print")}>
                 <Printer className="h-4 w-4 mr-2" /> Print IPAM
               </DropdownMenuItem>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
