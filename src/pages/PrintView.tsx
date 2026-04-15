@@ -31,21 +31,27 @@ export default function PrintView() {
   const navigate = useNavigate();
   const [rackItems, setRackItems] = useState<RackItem[]>([]);
   const [rackDevices, setRackDevices] = useState<RackDevice[]>([]);
+  const [cableDrops, setCableDrops] = useState<CableDrop[]>([]);
+  const [pduOutlets, setPduOutlets] = useState<PduOutlet[]>([]);
 
   useEffect(() => {
     document.title = `${settings.site_name} — Print View`;
   }, [settings.site_name]);
 
-  const fetchRackData = useCallback(async () => {
-    const [rackRes, devRes] = await Promise.all([
+  const fetchExtraData = useCallback(async () => {
+    const [rackRes, devRes, cableRes, pduRes] = await Promise.all([
       supabase.from("rack_items" as any).select("*").order("start_u"),
       supabase.from("devices").select("id, device_name, brand, model, ip_address"),
+      supabase.from("cable_drops" as any).select("*").order("sort_order"),
+      supabase.from("pdu_outlets" as any).select("*").order("outlet_number"),
     ]);
     if (rackRes.data) setRackItems(rackRes.data as any);
     if (devRes.data) setRackDevices(devRes.data as RackDevice[]);
+    if (cableRes.data) setCableDrops(cableRes.data as any);
+    if (pduRes.data) setPduOutlets(pduRes.data as any);
   }, []);
 
-  useEffect(() => { fetchRackData(); }, [fetchRackData]);
+  useEffect(() => { fetchExtraData(); }, [fetchExtraData]);
 
   const handlePrint = () => window.print();
 
