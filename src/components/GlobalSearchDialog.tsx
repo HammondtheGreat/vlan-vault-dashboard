@@ -54,7 +54,7 @@ export default function GlobalSearchDialog({ open, onClose }: { open: boolean; o
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-card border-border sm:max-w-lg p-0 gap-0 overflow-hidden">
+      <DialogContent className="bg-card border-border sm:max-w-lg p-0 gap-0 overflow-hidden [&>button.absolute]:hidden">
         <div className="flex items-center gap-2 px-4 border-b border-border">
           <Search className="h-4 w-4 text-muted-foreground shrink-0" />
           <Input
