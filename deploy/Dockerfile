@@ -7,24 +7,29 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-# These will be baked into the build — point to your self-hosted Supabase
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_PUBLISHABLE_KEY
-
-ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
-ENV VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
+# Point frontend to the API server
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
 
 RUN npm run build
 
 # ── Stage 2: Serve with Nginx ────────────────────────────────
 FROM nginx:alpine
 
-# SPA fallback — all routes serve index.html
+# SPA fallback + reverse proxy /api to the API container
 RUN echo 'server { \
     listen 80; \
     server_name _; \
     root /usr/share/nginx/html; \
     index index.html; \
+    location /api/ { \
+        proxy_pass http://api:3001; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+    } \
+    location /uploads/ { \
+        proxy_pass http://api:3001; \
+    } \
     location / { \
         try_files $uri $uri/ /index.html; \
     } \
