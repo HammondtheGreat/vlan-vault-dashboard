@@ -437,9 +437,9 @@ function UserManagement({ currentUserId }: { currentUserId?: string }) {
         toast.success("User updated");
       } else {
         if (!formEmail || !formPassword) { toast.error("Email and password required"); setSaving(false); return; }
-        const { data, error } = await api.invokeFunction("manage-users", {
-          body: { action: "create", email: formEmail, password: formPassword, display_name: formName },
-        });
+        const { data, error } = await api.invokeFunction("manage-users", 
+          { action: "create", email: formEmail, password: formPassword, display_name: formName },
+        );
         if (error || data?.error) throw new Error(data?.error || error?.message);
         toast.success("User created");
       }
