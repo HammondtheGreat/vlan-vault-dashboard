@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { DeviceEntry, DEVICE_STATUSES } from "@/types/network";
 import { findNextAvailableIp } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
-import { supabase } from "@/integrations/supabase/client";
+import * as storage from "@/api/storage";
 import {
   Dialog,
   DialogContent,
