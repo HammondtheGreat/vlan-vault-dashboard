@@ -1,85 +1,126 @@
-# Warp9Net IPAM — Self-Hosted Deployment Guide
+# Warp9Net IPAM — Deployment Guide
 
-Deploy the IPAM stack (React frontend + Node API + MySQL) using Docker Compose in Portainer.
+Everything runs in Docker. Three containers: **MySQL**, **API**, **Frontend**.
 
-## Architecture
+---
 
-```
-Internet → Nginx Proxy Manager (SSL :443)
-    → ipam-frontend (:4242) — React app + reverse proxy to API
-    → api (:3001) — Express REST API
-    → db (:3306) — MySQL database
-```
-
-## Quick Start
-
-### 1. Configure Environment
+## Step 1: Get the code onto your server
 
 ```bash
-cp .env.example .env
-nano .env
+git clone <your-repo-url> warp9net-ipam
+cd warp9net-ipam
 ```
 
-Generate a JWT secret:
+---
+
+## Step 2: Generate your .env file
+
 ```bash
-openssl rand -base64 32
+bash setup.sh
 ```
 
-### 2. Deploy in Portainer
+This creates a `.env` with random database passwords and a JWT secret. You don't need to edit anything — it just works.
 
-1. In Portainer, go to **Stacks → Add stack**
-2. Upload the project or paste `docker-compose.yml`
-3. Add your `.env` variables
+---
+
+## Step 3: Start it up
+
+```bash
+docker compose up -d
+```
+
+That's it. Wait about 30 seconds for MySQL to initialize on first run.
+
+---
+
+## Step 4: Log in
+
+Open `http://your-server-ip:4242` in your browser.
+
+| Field    | Value                        |
+|----------|------------------------------|
+| Email    | `admin@warp9studios.com`     |
+| Password | `admin123`                   |
+
+**⚠️ Change your password immediately** in Settings after logging in.
+
+---
+
+## Deploying in Portainer
+
+1. Go to **Stacks → Add stack**
+2. Choose **Repository** and point it at your git repo, or **Upload** and upload the project folder
+3. In the **Environment variables** section, add the values from your `.env` file
 4. Click **Deploy the stack**
+5. Wait ~30 seconds, then visit port `4242`
 
-### 3. First Login
+---
 
-Navigate to your IPAM URL and log in with:
-- **Email:** `admin@warp9studios.com`
-- **Password:** `admin123`
-
-> ⚠️ Change this password immediately after first login.
-
-### 4. Configure Nginx Proxy Manager
-
-| Field | Value |
-|-------|-------|
-| Domain | `ipam.yourdomain.com` |
-| Scheme | `http` |
-| Forward Host | `ipam-frontend` |
-| Forward Port | `4242` |
-| SSL | Request new certificate, Force SSL |
-
-## File Structure
-
-```
-project/
-├── docker-compose.yml      # 3-container stack
-├── deploy/
-│   ├── Dockerfile          # Multi-stage React build + Nginx
-│   └── .env.example        # Environment template
-├── server/
-│   ├── Dockerfile          # Node API container
-│   ├── index.js            # Express entry point
-│   ├── init.sql            # MySQL schema + seed data
-│   └── routes/             # REST endpoints
-```
-
-## Updating
+## Updating after code changes
 
 ```bash
 docker compose build
 docker compose up -d
 ```
 
+Or in Portainer: click your stack → **Editor** → **Update the stack** with "Re-pull and redeploy" checked.
+
+---
+
+## Using a reverse proxy (Nginx Proxy Manager)
+
+If you want HTTPS with a domain name:
+
+| Field        | Value               |
+|--------------|---------------------|
+| Domain       | `ipam.yourdomain.com` |
+| Scheme       | `http`              |
+| Forward Host | `ipam-frontend`     |
+| Forward Port | `4242`              |
+| SSL          | Request new cert, Force SSL |
+
+---
+
 ## Backups
 
 ```bash
-docker exec ipam-db mysqldump -u root -p ipam > backup_$(date +%Y%m%d).sql
+docker exec $(docker ps -qf "name=db") mysqldump -u root -p ipam > backup_$(date +%Y%m%d).sql
 ```
+
+---
+
+## Restoring a backup
+
+```bash
+cat backup_20260415.sql | docker exec -i $(docker ps -qf "name=db") mysql -u root -p ipam
+```
+
+---
 
 ## Troubleshooting
 
-- **Can't log in?** Verify the API container is running: `docker logs ipam-api`
-- **Database errors?** Check MySQL started cleanly: `docker logs ipam-db`
-- **Uploads missing?** Ensure the `uploads` volume is mounted correctly
+| Problem | Fix |
+|---------|-----|
+| Can't reach the app | Check container is running: `docker compose ps` |
+| Login fails | Check API logs: `docker compose logs api` |
+| Database errors | Check MySQL started: `docker compose logs db` |
+| "Backend not reachable" on login page | The API container isn't running or isn't healthy yet — wait 30s or check logs |
+| Forgot admin password | Connect to MySQL and reset it, or delete the `db-data` volume and redeploy to start fresh |
+
+---
+
+## File structure
+
+```
+warp9net-ipam/
+├── setup.sh                 ← Run this first
+├── docker-compose.yml       ← The whole stack
+├── server/
+│   ├── Dockerfile           ← API container
+│   ├── index.js             ← Express entry point
+│   ├── init.sql             ← Database schema + seed user
+│   └── routes/              ← All REST endpoints
+└── deploy/
+    ├── Dockerfile           ← Frontend container (Nginx + React)
+    └── .env.example         ← Reference for env vars
+```
