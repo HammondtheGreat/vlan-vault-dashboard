@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 -- Seed default admin user (password: admin123)
 INSERT INTO users (id, email, password_hash) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'admin@warp9studios.com', '$2a$10$rQWvKz1Fz1Fz1Fz1Fz1FzOQWvKz1Fz1Fz1Fz1Fz1FzQWvKz1Fz1F')
+  ('00000000-0000-0000-0000-000000000001', 'admin@warp9studios.com', '$2b$10$dNqV4VmeJ4y0MMI2bWRJK.ZKvixXTVA3EpKekbM9kPVyOx7oXvhIi')
 ON DUPLICATE KEY UPDATE email = email;
 
 INSERT INTO profiles (id, user_id, display_name) VALUES
