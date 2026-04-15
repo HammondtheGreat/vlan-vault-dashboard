@@ -12,7 +12,7 @@ import VlanSummaryTable from "@/components/VlanSummaryTable";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
-import { Network, Activity, Search, Plus, BarChart3, ScrollText, Menu, Globe, List, Cable, Plug, ChevronDown, X, Palette, Wifi, Server } from "lucide-react";
+import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List, Cable, Plug, ChevronDown, X, Palette, Wifi, Server } from "lucide-react";
 import UserAvatarMenu from "@/components/UserAvatarMenu";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -71,7 +71,7 @@ const defaultBadgeColor = "bg-slate-500/20 text-slate-300";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { devices, vlans, addVlan, updateVlan, loading } = useNetwork();
-  const { } = useAuth();
+  const { signOut } = useAuth();
   const { settings } = useAppSettings();
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
