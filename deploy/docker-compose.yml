@@ -173,8 +173,8 @@ services:
   # ── IPAM Frontend (Nginx serving built React app) ──────────
   ipam-frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: deploy/Dockerfile
     restart: unless-stopped
     ports:
       - "4242:80"
