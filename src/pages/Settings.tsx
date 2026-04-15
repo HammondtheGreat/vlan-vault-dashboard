@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme, THEMES } from "@/context/ThemeContext";
 import { useAppSettings, useSmtpSettings } from "@/hooks/useAppSettings";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Settings as SettingsIcon, User, Mail, Globe, Eye, EyeOff, Users, Plus, Pencil, Trash2, Check, Palette } from "lucide-react";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowLeft, Settings as SettingsIcon, User, Mail, Globe, Eye, EyeOff, Users, Plus, Pencil, Trash2, Check, Palette, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -165,39 +167,48 @@ function GeneralSettings() {
 }
 
 function ProfileSettings({ user }: { user: any }) {
+  const { profile, updateAvatar } = useUserProfile();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
       setEmail(user.email || "");
-      supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("user_id", user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data?.display_name) setDisplayName(data.display_name);
-        });
+      if (profile.display_name) setDisplayName(profile.display_name);
     }
-  }, [user]);
+  }, [user, profile.display_name]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setUploadingAvatar(true);
+    try {
+      await updateAvatar(file);
+      toast.success("Avatar updated!");
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    }
+    setUploadingAvatar(false);
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Update display name
       await supabase.from("profiles").update({ display_name: displayName }).eq("user_id", user.id);
 
-      // Update email if changed
       if (email !== user.email) {
         const { error } = await supabase.auth.updateUser({ email });
         if (error) throw error;
         toast.info("Check your new email for a confirmation link");
       }
 
-      // Update password if provided
       if (newPassword) {
         if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); setSaving(false); return; }
         const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -212,8 +223,40 @@ function ProfileSettings({ user }: { user: any }) {
     setSaving(false);
   };
 
+  const initials = (profile.display_name || user?.email || "U")
+    .split(/[\s@]/)
+    .map((s: string) => s[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <SettingsCard title="Profile" description="Manage your account information">
+      {/* Avatar */}
+      <div className="flex items-center gap-4 pb-2">
+        <div className="relative group">
+          <Avatar className="h-20 w-20 border-2 border-border">
+            <AvatarImage src={profile.avatar_url || undefined} alt="Avatar" className="object-cover" />
+            <AvatarFallback className="bg-primary/20 text-primary text-lg font-medium">{initials}</AvatarFallback>
+          </Avatar>
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            {uploadingAvatar ? <Loader2 className="h-5 w-5 text-white animate-spin" /> : <Upload className="h-5 w-5 text-white" />}
+          </button>
+          <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-foreground">{profile.display_name || "No name set"}</p>
+          <p className="text-xs text-muted-foreground">{user?.email}</p>
+          <button onClick={() => avatarInputRef.current?.click()} className="text-xs text-primary hover:underline mt-1">
+            {uploadingAvatar ? "Uploading…" : "Change avatar"}
+          </button>
+        </div>
+      </div>
+
       <FieldGroup label="Display Name">
         <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="bg-background border-border" />
       </FieldGroup>

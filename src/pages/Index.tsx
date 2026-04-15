@@ -13,6 +13,7 @@ import AuditLogPanel from "@/components/AuditLogPanel";
 import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
 import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List, Cable, Plug, ChevronDown, X, Palette, Wifi, Server } from "lucide-react";
+import UserAvatarMenu from "@/components/UserAvatarMenu";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -224,21 +225,7 @@ export default function Dashboard() {
                 <span className="text-border">|</span>
                 <span className="font-mono">{vlans.length} VLANs</span>
                 <span className="text-border">|</span>
-                <button
-                  onClick={() => navigate("/settings")}
-                  className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Settings className="h-3.5 w-3.5" />
-                  <span>Settings</span>
-                </button>
-                <span className="text-border">|</span>
-                <button
-                  onClick={signOut}
-                  className="flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span>Logout</span>
-                </button>
+                <UserAvatarMenu />
               </div>
             </div>
 
