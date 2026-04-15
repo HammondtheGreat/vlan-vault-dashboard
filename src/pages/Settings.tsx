@@ -453,9 +453,9 @@ function UserManagement({ currentUserId }: { currentUserId?: string }) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    const { data, error } = await api.invokeFunction("manage-users", {
-      body: { action: "delete", user_id: deleteTarget.id },
-    });
+    const { data, error } = await api.invokeFunction("manage-users", 
+      { action: "delete", user_id: deleteTarget.id },
+    );
     if (error || data?.error) {
       toast.error(data?.error || error?.message || "Delete failed");
     } else {
