@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -24,12 +24,8 @@ export function useAppSettings() {
     queryKey: ["app_settings", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("app_settings" as any)
-        .select("*")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      if (error) throw error;
+      const { data, error } = await api.getAppSettings(user!.id);
+      if (error) throw new Error(error.message);
       if (!data) return defaults;
       return data as unknown as AppSettings;
     },
@@ -39,16 +35,11 @@ export function useAppSettings() {
     mutationFn: async (settings: Partial<AppSettings>) => {
       const existing = query.data;
       if (existing?.id) {
-        const { error } = await supabase
-          .from("app_settings" as any)
-          .update({ ...settings, updated_at: new Date().toISOString() } as any)
-          .eq("id", existing.id);
-        if (error) throw error;
+        const { error } = await api.updateAppSettings(existing.id, settings as any);
+        if (error) throw new Error(error.message);
       } else {
-        const { error } = await supabase
-          .from("app_settings" as any)
-          .insert({ ...settings, user_id: user!.id } as any);
-        if (error) throw error;
+        const { error } = await api.insertAppSettings({ ...settings, user_id: user!.id } as any);
+        if (error) throw new Error(error.message);
       }
     },
     onSuccess: () => {
@@ -90,12 +81,8 @@ export function useSmtpSettings() {
     queryKey: ["smtp_settings", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("smtp_settings" as any)
-        .select("*")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      if (error) throw error;
+      const { data, error } = await api.getSmtpSettings(user!.id);
+      if (error) throw new Error(error.message);
       if (!data) return smtpDefaults;
       return data as unknown as SmtpSettings;
     },
@@ -105,16 +92,11 @@ export function useSmtpSettings() {
     mutationFn: async (settings: Partial<SmtpSettings>) => {
       const existing = query.data;
       if (existing?.id) {
-        const { error } = await supabase
-          .from("smtp_settings" as any)
-          .update({ ...settings, updated_at: new Date().toISOString() } as any)
-          .eq("id", existing.id);
-        if (error) throw error;
+        const { error } = await api.updateSmtpSettings(existing.id, settings as any);
+        if (error) throw new Error(error.message);
       } else {
-        const { error } = await supabase
-          .from("smtp_settings" as any)
-          .insert({ ...settings, user_id: user!.id } as any);
-        if (error) throw error;
+        const { error } = await api.insertSmtpSettings({ ...settings, user_id: user!.id } as any);
+        if (error) throw new Error(error.message);
       }
     },
     onSuccess: () => {

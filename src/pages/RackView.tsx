@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { Activity, ArrowLeft, Server, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,8 +57,8 @@ export default function RackView() {
 
   const fetchData = useCallback(async () => {
     const [rackRes, devRes] = await Promise.all([
-      supabase.from("rack_items" as any).select("*").order("start_u"),
-      supabase.from("devices").select("*").order("device_name"),
+      api.getRackItems(),
+      api.getDevicesByName(),
     ]);
     if (rackRes.error) toast.error(rackRes.error.message);
     if (devRes.error) toast.error(devRes.error.message);
@@ -135,10 +135,7 @@ export default function RackView() {
       prev.map(ri => ri.id === draggedItem.id ? { ...ri, start_u: targetU } : ri)
     );
 
-    const { error } = await supabase
-      .from("rack_items" as any)
-      .update({ start_u: targetU } as any)
-      .eq("id", draggedItem.id);
+    const { error } = await api.updateRackItem(draggedItem.id, { start_u: targetU });
 
     if (error) {
       toast.error(error.message);
@@ -151,13 +148,13 @@ export default function RackView() {
   const addItem = async () => {
     const isBlank = form.device_id === "__blank__";
     const device = !isBlank ? devices.find(d => d.id === form.device_id) : null;
-    const { error } = await supabase.from("rack_items" as any).insert({
+    const { error } = await api.createRackItem({
       device_id: isBlank ? null : (form.device_id || null),
       start_u: form.start_u,
       u_size: form.u_size,
       label: form.label || (device ? device.device_name : "Rack Blank"),
       notes: form.notes,
-    } as any);
+    });
     if (error) { toast.error(error.message); return; }
     toast.success("Item added to rack");
     setAddOpen(false);
@@ -167,7 +164,7 @@ export default function RackView() {
 
   const deleteItem = async () => {
     if (!deleteTarget) return;
-    const { error } = await supabase.from("rack_items" as any).delete().eq("id", deleteTarget.id);
+    const { error } = await api.deleteRackItem(deleteTarget.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Item removed from rack");
     setDeleteTarget(null);

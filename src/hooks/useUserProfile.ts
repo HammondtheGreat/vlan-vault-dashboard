@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
+import * as storage from "@/api/storage";
 import { useAuth } from "@/context/AuthContext";
 
 interface UserProfile {
@@ -14,12 +15,8 @@ export function useUserProfile() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("profiles")
-      .select("display_name, avatar_url")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (data) setProfile(data);
+    const { data } = await api.getProfile(user.id);
+    if (data) setProfile(data as any);
     setLoading(false);
   }, [user]);
 
@@ -30,20 +27,14 @@ export function useUserProfile() {
     const ext = file.name.split(".").pop() || "jpg";
     const filePath = `${user.id}/avatar.${ext}`;
 
-    // Delete old avatar if exists
-    await supabase.storage.from("avatars").remove([filePath]);
+    await storage.deleteFile("avatars", [filePath]);
 
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(filePath, file, { upsert: true });
-    if (uploadError) throw uploadError;
+    const { error: uploadError } = await storage.uploadFile("avatars", filePath, file, { upsert: true });
+    if (uploadError) throw new Error(uploadError.message);
 
-    const { data: urlData } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(filePath);
-
-    const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-    await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("user_id", user.id);
+    const publicUrl = storage.getPublicUrl("avatars", filePath);
+    const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+    await api.updateProfile(user.id, { avatar_url: avatarUrl } as any);
     setProfile((p) => ({ ...p, avatar_url: avatarUrl }));
     return avatarUrl;
   };

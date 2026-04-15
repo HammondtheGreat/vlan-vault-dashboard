@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { DeviceEntry, VlanInfo } from "@/types/network";
 import { findIpConflict, parseSubnet, ipToNum, numToIp } from "@/data/networkData";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
@@ -22,14 +22,14 @@ interface NetworkContextType {
 const NetworkContext = createContext<NetworkContextType | null>(null);
 
 async function logAudit(action: string, entityType: string, entityId: string, details: any, userId?: string, userEmail?: string) {
-  await supabase.from("audit_log" as any).insert({
+  await api.createAuditEntry({
     action,
     entity_type: entityType,
     entity_id: entityId,
     details,
     performed_by: userId,
     performed_by_email: userEmail,
-  } as any);
+  });
 }
 
 export function NetworkProvider({ children }: { children: React.ReactNode }) {
@@ -40,12 +40,12 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
 
   const fetchAll = useCallback(async () => {
     const [vlansRes, devicesRes] = await Promise.all([
-      supabase.from("vlans" as any).select("*").order("vlan_id"),
-      supabase.from("devices" as any).select("*").order("ip_address"),
+      api.getVlans(),
+      api.getDevices(),
     ]);
 
     if (vlansRes.data) {
-      setVlans((vlansRes.data as any[]).map((v) => ({
+      setVlans(vlansRes.data.map((v) => ({
         id: v.vlan_id,
         name: v.name,
         subnet: v.subnet,
@@ -56,7 +56,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
 
     if (devicesRes.data) {
       const grouped: Record<number, DeviceEntry[]> = {};
-      for (const d of devicesRes.data as any[]) {
+      for (const d of devicesRes.data) {
         if (!grouped[d.vlan_id]) grouped[d.vlan_id] = [];
         grouped[d.vlan_id].push({
           id: d.id,
@@ -88,7 +88,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
     }
-    const { error } = await supabase.from("devices" as any).insert({
+    const { error } = await api.createDevice({
       vlan_id: vlanId,
       ip_address: device.ipAddress,
       device_name: device.device,
@@ -98,14 +98,14 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       location: device.location,
       notes: device.notes,
       status: device.status || "",
-    } as any);
+    });
     if (error) { toast.error(error.message); return false; }
     await logAudit("device_added", "device", device.ipAddress, { vlan_id: vlanId, device_name: device.device }, user?.id, user?.email);
     await fetchAll();
     return true;
   }, [devices, vlans, user, fetchAll]);
 
-  const updateDevice = useCallback(async (vlanId: number, device: DeviceEntry): Promise<boolean> => {
+  const updateDeviceHandler = useCallback(async (vlanId: number, device: DeviceEntry): Promise<boolean> => {
     if (device.ipAddress) {
       const conflict = findIpConflict(device.ipAddress, devices, vlans, device.id);
       if (conflict) {
@@ -113,7 +113,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
     }
-    const { error } = await supabase.from("devices" as any).update({
+    const { error } = await api.updateDevice(device.id, {
       ip_address: device.ipAddress,
       device_name: device.device,
       brand: device.brand,
@@ -123,22 +123,22 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       notes: device.notes,
       status: device.status || "",
       updated_at: new Date().toISOString(),
-    } as any).eq("id", device.id);
+    });
     if (error) { toast.error(error.message); return false; }
     await logAudit("device_updated", "device", device.ipAddress, { vlan_id: vlanId, device_name: device.device }, user?.id, user?.email);
     await fetchAll();
     return true;
   }, [devices, vlans, user, fetchAll]);
 
-  const deleteDevice = useCallback(async (vlanId: number, deviceId: string) => {
+  const deleteDeviceHandler = useCallback(async (vlanId: number, deviceId: string) => {
     const dev = devices[vlanId]?.find((d) => d.id === deviceId);
-    const { error } = await supabase.from("devices" as any).delete().eq("id", deviceId);
+    const { error } = await api.deleteDevice(deviceId);
     if (error) { toast.error(error.message); return; }
     await logAudit("device_deleted", "device", dev?.ipAddress || deviceId, { vlan_id: vlanId, device_name: dev?.device }, user?.id, user?.email);
     await fetchAll();
   }, [devices, user, fetchAll]);
 
-  const updateVlan = useCallback(async (vlanId: number, updates: Partial<VlanInfo>) => {
+  const updateVlanHandler = useCallback(async (vlanId: number, updates: Partial<VlanInfo>) => {
     const dbUpdates: any = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
     if (updates.subnet !== undefined) dbUpdates.subnet = updates.subnet;
@@ -152,8 +152,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       const exists = vlans.some((v) => v.id === newId);
       if (exists) { toast.error(`VLAN ${newId} already exists`); return; }
       dbUpdates.vlan_id = newId;
-      // Update all devices to point to new VLAN ID
-      await supabase.from("devices" as any).update({ vlan_id: newId } as any).eq("vlan_id", vlanId);
+      await api.updateDevicesByVlan(vlanId, { vlan_id: newId } as any);
     }
 
     // Handle subnet change — remap device IPs
@@ -172,7 +171,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
               const offset = devNum - oldBaseNum;
               if (offset >= 0 && offset < newParsed.hostCount) {
                 const newIp = numToIp(newBaseNum + offset);
-                await supabase.from("devices" as any).update({ ip_address: newIp } as any).eq("id", dev.id);
+                await api.updateDevice(dev.id, { ip_address: newIp });
               }
             }
           }
@@ -180,48 +179,45 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    const { error } = await supabase.from("vlans" as any).update(dbUpdates).eq("vlan_id", vlanId);
+    const { error } = await api.updateVlan(vlanId, dbUpdates);
     if (error) { toast.error(error.message); return; }
     await logAudit("vlan_updated", "vlan", String(vlanId), updates, user?.id, user?.email);
     await fetchAll();
   }, [vlans, devices, user, fetchAll]);
 
-  const addVlan = useCallback(async (vlan: VlanInfo): Promise<boolean> => {
+  const addVlanHandler = useCallback(async (vlan: VlanInfo): Promise<boolean> => {
     const exists = vlans.some((v) => v.id === vlan.id);
     if (exists) { toast.error(`VLAN ${vlan.id} already exists`); return false; }
-    const { error } = await supabase.from("vlans" as any).insert({
+    const { error } = await api.createVlan({
       vlan_id: vlan.id,
       name: vlan.name,
       subnet: vlan.subnet,
       color: vlan.color,
       icon: vlan.icon || "Network",
-    } as any);
+    });
     if (error) { toast.error(error.message); return false; }
     await logAudit("vlan_added", "vlan", String(vlan.id), { name: vlan.name, subnet: vlan.subnet }, user?.id, user?.email);
     await fetchAll();
     return true;
   }, [vlans, user, fetchAll]);
 
-  const deleteVlan = useCallback(async (vlanId: number) => {
+  const deleteVlanHandler = useCallback(async (vlanId: number) => {
     const vlan = vlans.find((v) => v.id === vlanId);
-    const { error } = await supabase.from("vlans" as any).delete().eq("vlan_id", vlanId);
+    const { error } = await api.deleteVlan(vlanId);
     if (error) { toast.error(error.message); return; }
     await logAudit("vlan_deleted", "vlan", String(vlanId), { name: vlan?.name }, user?.id, user?.email);
     await fetchAll();
   }, [vlans, user, fetchAll]);
 
   const importData = useCallback(async (newVlans: VlanInfo[], newDevices: Record<number, DeviceEntry[]>) => {
-    // Delete existing data
-    await supabase.from("devices" as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    await supabase.from("vlans" as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    await api.deleteAllDevices();
+    await api.deleteAllVlans();
 
-    // Insert new VLANs
     const vlanRows = newVlans.map((v) => ({
       vlan_id: v.id, name: v.name, subnet: v.subnet, color: v.color || "var(--vlan-infra)", icon: v.icon || "Network",
     }));
-    await supabase.from("vlans" as any).insert(vlanRows as any);
+    await api.bulkInsertVlans(vlanRows);
 
-    // Insert new devices
     const deviceRows: any[] = [];
     for (const [vid, devs] of Object.entries(newDevices)) {
       for (const d of devs) {
@@ -239,7 +235,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
       }
     }
     if (deviceRows.length > 0) {
-      await supabase.from("devices" as any).insert(deviceRows as any);
+      await api.bulkInsertDevices(deviceRows);
     }
 
     await logAudit("data_imported", "system", "import", {
@@ -251,7 +247,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
   }, [user, fetchAll]);
 
   return (
-    <NetworkContext.Provider value={{ devices, vlans, loading, addDevice, updateDevice, deleteDevice, updateVlan, addVlan, deleteVlan, importData, refresh: fetchAll }}>
+    <NetworkContext.Provider value={{ devices, vlans, loading, addDevice, updateDevice: updateDeviceHandler, deleteDevice: deleteDeviceHandler, updateVlan: updateVlanHandler, addVlan: addVlanHandler, deleteVlan: deleteVlanHandler, importData, refresh: fetchAll }}>
       {children}
     </NetworkContext.Provider>
   );

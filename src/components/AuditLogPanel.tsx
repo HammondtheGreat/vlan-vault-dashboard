@@ -1,16 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
+import type { AuditLogRow } from "@/api/types";
 import { Clock, User, Plus, Pencil, Trash2, FileInput } from "lucide-react";
-
-interface AuditEntry {
-  id: string;
-  action: string;
-  entity_type: string;
-  entity_id: string | null;
-  details: any;
-  performed_by_email: string | null;
-  created_at: string;
-}
 
 const actionIcons: Record<string, React.ReactNode> = {
   device_added: <Plus className="h-3.5 w-3.5 text-emerald-400" />,
@@ -22,7 +13,7 @@ const actionIcons: Record<string, React.ReactNode> = {
   data_imported: <FileInput className="h-3.5 w-3.5 text-amber-400" />,
 };
 
-function formatAction(entry: AuditEntry): string {
+function formatAction(entry: AuditLogRow): string {
   const d = entry.details || {};
   switch (entry.action) {
     case "device_added": return `Added device "${d.device_name || ""}" (${entry.entity_id}) to VLAN ${d.vlan_id}`;
@@ -37,17 +28,13 @@ function formatAction(entry: AuditEntry): string {
 }
 
 export default function AuditLogPanel() {
-  const [entries, setEntries] = useState<AuditEntry[]>([]);
+  const [entries, setEntries] = useState<AuditLogRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from("audit_log" as any)
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      setEntries((data as any as AuditEntry[]) || []);
+      const { data } = await api.getAuditLog(50);
+      setEntries(data || []);
       setLoading(false);
     }
     load();

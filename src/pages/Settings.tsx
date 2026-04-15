@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme, THEMES } from "@/context/ThemeContext";
 import { useAppSettings, useSmtpSettings } from "@/hooks/useAppSettings";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
+import * as authApi from "@/api/auth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Settings as SettingsIcon, User, Mail, Globe, Eye, EyeOff, Users, Plus, Pencil, Trash2, Check, Palette, Upload, Loader2 } from "lucide-react";
@@ -201,19 +202,20 @@ function ProfileSettings({ user }: { user: any }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await supabase.from("profiles").update({ display_name: displayName }).eq("user_id", user.id);
+      await api.updateProfile(user.id, { display_name: displayName } as any);
 
       if (email !== user.email) {
-        const { error } = await supabase.auth.updateUser({ email });
-        if (error) throw error;
+        const { error } = await authApi.updateUserEmail(email);
+        if (error) throw new Error(error.message);
         toast.info("Check your new email for a confirmation link");
       }
 
       if (newPassword) {
         if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); setSaving(false); return; }
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) throw error;
+        const { error } = await authApi.updateUserPassword(newPassword);
+        if (error) throw new Error(error.message);
         setNewPassword("");
+      }
       }
 
       toast.success("Profile updated");
