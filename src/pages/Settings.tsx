@@ -216,7 +216,6 @@ function ProfileSettings({ user }: { user: any }) {
         if (error) throw new Error(error.message);
         setNewPassword("");
       }
-      }
 
       toast.success("Profile updated");
     } catch (err: any) {
