@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { Activity, ArrowLeft, Wifi, Save, X, Plus, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,9 +34,9 @@ export default function WirelessNetworks() {
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
 
   const fetchNetworks = useCallback(async () => {
-    const { data, error } = await supabase.from("wireless_networks" as any).select("*").order("sort_order");
+    const { data, error } = await api.getWirelessNetworks();
     if (error) { toast.error(error.message); return; }
-    setNetworks((data as any[]) || []);
+    setNetworks(data || []);
     setLoading(false);
   }, []);
 
@@ -47,13 +47,13 @@ export default function WirelessNetworks() {
 
   const saveEdit = async () => {
     if (!editingId) return;
-    const { error } = await supabase.from("wireless_networks" as any).update({
+    const { error } = await api.updateWirelessNetwork(editingId, {
       ssid: editForm.ssid,
       password: editForm.password,
       notes: editForm.notes,
       is_hidden: editForm.is_hidden,
       updated_at: new Date().toISOString(),
-    } as any).eq("id", editingId);
+    });
     if (error) { toast.error(error.message); return; }
     toast.success("Network updated");
     setEditingId(null);
@@ -62,13 +62,13 @@ export default function WirelessNetworks() {
 
   const addNetwork = async () => {
     const nextOrder = networks.length > 0 ? Math.max(...networks.map(n => n.sort_order)) + 1 : 0;
-    const { error } = await supabase.from("wireless_networks" as any).insert({
+    const { error } = await api.createWirelessNetwork({
       ssid: newNetwork.ssid,
       password: newNetwork.password,
       notes: newNetwork.notes,
       is_hidden: newNetwork.is_hidden,
       sort_order: nextOrder,
-    } as any);
+    });
     if (error) { toast.error(error.message); return; }
     toast.success("Network added");
     setAdding(false);
@@ -77,7 +77,7 @@ export default function WirelessNetworks() {
   };
 
   const deleteNetwork = async (id: string) => {
-    const { error } = await supabase.from("wireless_networks" as any).delete().eq("id", id);
+    const { error } = await api.deleteWirelessNetwork(id);
     if (error) { toast.error(error.message); return; }
     toast.success("Network removed");
     fetchNetworks();

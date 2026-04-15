@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { Activity, Plus, Trash2, Save, X, Cable, ArrowLeft, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,9 +48,9 @@ export default function CableDrops() {
   const [newDrop, setNewDrop] = useState<Partial<CableDrop>>({ label: "", location: "", category: "", switch_model: "", switch_port: "", notes: "" });
 
   const fetchDrops = useCallback(async () => {
-    const { data, error } = await supabase.from("cable_drops" as any).select("*").order("sort_order");
+    const { data, error } = await api.getCableDrops();
     if (error) { toast.error(error.message); return; }
-    setDrops((data as any[]) || []);
+    setDrops(data || []);
     setLoading(false);
   }, []);
 
@@ -65,7 +65,7 @@ export default function CableDrops() {
 
   const saveEdit = async () => {
     if (!editingId) return;
-    const { error } = await supabase.from("cable_drops" as any).update({
+    const { error } = await api.updateCableDrop(editingId, {
       label: editForm.label,
       location: editForm.location,
       category: editForm.category,
@@ -73,7 +73,7 @@ export default function CableDrops() {
       switch_port: editForm.switch_port,
       notes: editForm.notes,
       updated_at: new Date().toISOString(),
-    } as any).eq("id", editingId);
+    });
     if (error) { toast.error(error.message); return; }
     toast.success("Drop updated");
     setEditingId(null);
@@ -82,7 +82,7 @@ export default function CableDrops() {
 
   const addDrop = async () => {
     const maxOrder = drops.length > 0 ? Math.max(...drops.map(d => d.sort_order)) : 0;
-    const { error } = await supabase.from("cable_drops" as any).insert({
+    const { error } = await api.createCableDrop({
       label: newDrop.label || "",
       location: newDrop.location || "",
       category: newDrop.category || "",
@@ -90,7 +90,7 @@ export default function CableDrops() {
       switch_port: newDrop.switch_port || "",
       notes: newDrop.notes || "",
       sort_order: maxOrder + 1,
-    } as any);
+    });
     if (error) { toast.error(error.message); return; }
     toast.success("Drop added");
     setAdding(false);
@@ -99,7 +99,7 @@ export default function CableDrops() {
   };
 
   const deleteDrop = async (id: string) => {
-    const { error } = await supabase.from("cable_drops" as any).delete().eq("id", id);
+    const { error } = await api.deleteCableDrop(id);
     if (error) { toast.error(error.message); return; }
     toast.success("Drop removed");
     fetchDrops();
@@ -218,8 +218,8 @@ export default function CableDrops() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Delete {drop.label}?</AlertDialogTitle>
-                                <AlertDialogDescription>This will permanently remove this cable drop.</AlertDialogDescription>
+                                <AlertDialogTitle>Delete "{drop.label}"?</AlertDialogTitle>
+                                <AlertDialogDescription>This will permanently remove this cable drop entry.</AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import * as api from "@/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { Activity, ArrowLeft, Plug, Save, X, Plus, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,9 +30,9 @@ export default function PduOutlets() {
   const [newOutlet, setNewOutlet] = useState({ outlet_number: 0, device_name: "", notes: "" });
 
   const fetchOutlets = useCallback(async () => {
-    const { data, error } = await supabase.from("pdu_outlets" as any).select("*").order("outlet_number");
+    const { data, error } = await api.getPduOutlets();
     if (error) { toast.error(error.message); return; }
-    setOutlets((data as any[]) || []);
+    setOutlets(data || []);
     setLoading(false);
   }, []);
 
@@ -43,12 +43,12 @@ export default function PduOutlets() {
 
   const saveEdit = async () => {
     if (!editingId) return;
-    const { error } = await supabase.from("pdu_outlets" as any).update({
+    const { error } = await api.updatePduOutlet(editingId, {
       outlet_number: editForm.outlet_number,
       device_name: editForm.device_name,
       notes: editForm.notes,
       updated_at: new Date().toISOString(),
-    } as any).eq("id", editingId);
+    });
     if (error) { toast.error(error.message); return; }
     toast.success("Outlet updated");
     setEditingId(null);
@@ -57,11 +57,11 @@ export default function PduOutlets() {
 
   const addOutlet = async () => {
     const nextNum = outlets.length > 0 ? Math.max(...outlets.map(o => o.outlet_number)) + 1 : 1;
-    const { error } = await supabase.from("pdu_outlets" as any).insert({
+    const { error } = await api.createPduOutlet({
       outlet_number: newOutlet.outlet_number || nextNum,
       device_name: newOutlet.device_name,
       notes: newOutlet.notes,
-    } as any);
+    });
     if (error) { toast.error(error.message); return; }
     toast.success("Outlet added");
     setAdding(false);
@@ -70,7 +70,7 @@ export default function PduOutlets() {
   };
 
   const deleteOutlet = async (id: string) => {
-    const { error } = await supabase.from("pdu_outlets" as any).delete().eq("id", id);
+    const { error } = await api.deletePduOutlet(id);
     if (error) { toast.error(error.message); return; }
     toast.success("Outlet removed");
     fetchOutlets();
