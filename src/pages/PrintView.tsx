@@ -23,6 +23,24 @@ interface RackDevice {
   ip_address: string;
 }
 
+interface CableDrop {
+  id: string;
+  label: string;
+  location: string;
+  category: string;
+  switch_model: string;
+  switch_port: string;
+  notes: string;
+  sort_order: number;
+}
+
+interface PduOutlet {
+  id: string;
+  outlet_number: number;
+  device_name: string;
+  notes: string;
+}
+
 const TOTAL_U = 22;
 
 export default function PrintView() {
@@ -31,21 +49,27 @@ export default function PrintView() {
   const navigate = useNavigate();
   const [rackItems, setRackItems] = useState<RackItem[]>([]);
   const [rackDevices, setRackDevices] = useState<RackDevice[]>([]);
+  const [cableDrops, setCableDrops] = useState<CableDrop[]>([]);
+  const [pduOutlets, setPduOutlets] = useState<PduOutlet[]>([]);
 
   useEffect(() => {
     document.title = `${settings.site_name} — Print View`;
   }, [settings.site_name]);
 
-  const fetchRackData = useCallback(async () => {
-    const [rackRes, devRes] = await Promise.all([
+  const fetchExtraData = useCallback(async () => {
+    const [rackRes, devRes, cableRes, pduRes] = await Promise.all([
       supabase.from("rack_items" as any).select("*").order("start_u"),
       supabase.from("devices").select("id, device_name, brand, model, ip_address"),
+      supabase.from("cable_drops" as any).select("*").order("sort_order"),
+      supabase.from("pdu_outlets" as any).select("*").order("outlet_number"),
     ]);
     if (rackRes.data) setRackItems(rackRes.data as any);
     if (devRes.data) setRackDevices(devRes.data as RackDevice[]);
+    if (cableRes.data) setCableDrops(cableRes.data as any);
+    if (pduRes.data) setPduOutlets(pduRes.data as any);
   }, []);
 
-  useEffect(() => { fetchRackData(); }, [fetchRackData]);
+  useEffect(() => { fetchExtraData(); }, [fetchExtraData]);
 
   const handlePrint = () => window.print();
 
@@ -209,6 +233,72 @@ export default function PrintView() {
             </tbody>
           </table>
         </div>
+
+        {/* Cable Drops */}
+        {cableDrops.length > 0 && (
+          <div className="mt-10 print:mt-6 print:break-before-page">
+            <div className="flex items-baseline gap-2 mb-3 border-b-2 border-foreground/20 print:border-black/30 pb-1">
+              <h2 className="text-lg font-bold text-foreground print:text-black">Cable Drops</h2>
+              <span className="text-xs text-muted-foreground print:text-gray-500 ml-auto">
+                {cableDrops.length} drop{cableDrops.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <table className="w-full text-sm border-collapse border border-border print:border-gray-400">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground print:text-gray-600 bg-muted/30 print:bg-gray-100">
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Label</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Location</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Category</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Switch</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Port</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cableDrops.map((cd) => (
+                  <tr key={cd.id} className="border border-border print:border-gray-300 text-foreground print:text-black">
+                    <td className="py-1.5 px-2 font-medium">{cd.label || "—"}</td>
+                    <td className="py-1.5 px-2">{cd.location || "—"}</td>
+                    <td className="py-1.5 px-2">{cd.category || "—"}</td>
+                    <td className="py-1.5 px-2 text-xs">{cd.switch_model || "—"}</td>
+                    <td className="py-1.5 px-2 font-mono text-xs">{cd.switch_port || "—"}</td>
+                    <td className="py-1.5 px-2 text-xs text-muted-foreground print:text-gray-500">{cd.notes || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* PDU Outlets */}
+        {pduOutlets.length > 0 && (
+          <div className="mt-10 print:mt-6 print:break-before-page">
+            <div className="flex items-baseline gap-2 mb-3 border-b-2 border-foreground/20 print:border-black/30 pb-1">
+              <h2 className="text-lg font-bold text-foreground print:text-black">PDU Outlets</h2>
+              <span className="text-xs text-muted-foreground print:text-gray-500 ml-auto">
+                {pduOutlets.length} outlet{pduOutlets.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <table className="w-full text-sm border-collapse border border-border print:border-gray-400">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground print:text-gray-600 bg-muted/30 print:bg-gray-100">
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300 w-20 text-center">Outlet #</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Device</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pduOutlets.map((pdu) => (
+                  <tr key={pdu.id} className="border border-border print:border-gray-300 text-foreground print:text-black">
+                    <td className="py-1.5 px-2 text-center font-mono text-xs">{pdu.outlet_number}</td>
+                    <td className="py-1.5 px-2 font-medium">{pdu.device_name || "—"}</td>
+                    <td className="py-1.5 px-2 text-xs text-muted-foreground print:text-gray-500">{pdu.notes || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
