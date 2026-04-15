@@ -23,6 +23,24 @@ interface RackDevice {
   ip_address: string;
 }
 
+interface CableDrop {
+  id: string;
+  label: string;
+  location: string;
+  category: string;
+  switch_model: string;
+  switch_port: string;
+  notes: string;
+  sort_order: number;
+}
+
+interface PduOutlet {
+  id: string;
+  outlet_number: number;
+  device_name: string;
+  notes: string;
+}
+
 const TOTAL_U = 22;
 
 export default function PrintView() {
