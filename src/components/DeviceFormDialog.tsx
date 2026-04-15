@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DeviceEntry, DEVICE_STATUSES } from "@/types/network";
 import { findNextAvailableIp } from "@/data/networkData";
 import { useNetwork } from "@/context/NetworkContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Zap } from "lucide-react";
+import { Zap, Upload, FileText, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -33,6 +34,8 @@ interface Props {
 
 export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSubnet, vlanId }: Props) {
   const { devices } = useNetwork();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState<Omit<DeviceEntry, "id">>({
     ipAddress: "",
     device: "",
@@ -63,6 +66,45 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
     }
   };
 
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      toast.error("Only PDF files are accepted");
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("File must be under 20MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const filePath = `${vlanId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("device-docs")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("device-docs")
+        .getPublicUrl(filePath);
+
+      setForm((f) => ({ ...f, docs: urlData.publicUrl }));
+      toast.success("PDF uploaded successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.ipAddress.trim()) {
@@ -75,14 +117,15 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
     });
   };
 
-  const fields: { key: keyof Omit<DeviceEntry, "id" | "updatedAt" | "status">; label: string; mono?: boolean; placeholder?: string }[] = [
+  const fields: { key: keyof Omit<DeviceEntry, "id" | "updatedAt" | "status" | "docs">; label: string; mono?: boolean; placeholder?: string }[] = [
     { key: "device", label: "Device Name", placeholder: "e.g. sw-mdf-core" },
     { key: "brand", label: "Brand", placeholder: "e.g. Juniper" },
     { key: "model", label: "Model", placeholder: "e.g. EX4300-48MP" },
-    { key: "docs", label: "Docs", placeholder: "URL or description" },
     { key: "location", label: "Location", placeholder: "e.g. Garage" },
     { key: "notes", label: "Notes", placeholder: "Additional notes" },
   ];
+
+  const isPdfUrl = form.docs.includes("/device-docs/") && form.docs.endsWith(".pdf");
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -128,6 +171,48 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
               />
             </div>
           ))}
+
+          {/* Docs field with PDF upload */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Docs</Label>
+            <div className="flex gap-2">
+              <Input
+                value={form.docs}
+                onChange={(e) => setForm((f) => ({ ...f, docs: e.target.value }))}
+                placeholder="URL or description"
+                className="bg-muted/50 border-border flex-1"
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={handlePdfUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="border-primary/30 text-primary hover:bg-primary/10 shrink-0 gap-1"
+              >
+                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                PDF
+              </Button>
+            </div>
+            {isPdfUrl && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <FileText className="h-3.5 w-3.5 text-primary" />
+                <a href={form.docs} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[250px]">
+                  Uploaded PDF
+                </a>
+                <button type="button" onClick={() => setForm((f) => ({ ...f, docs: "" }))} className="text-muted-foreground hover:text-destructive">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Status dropdown */}
           <div className="space-y-1">
