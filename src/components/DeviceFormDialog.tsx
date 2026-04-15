@@ -85,17 +85,11 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
       const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const filePath = `${vlanId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("device-docs")
-        .upload(filePath, file);
+      const { error: uploadError } = await storage.uploadFile("device-docs", filePath, file);
+      if (uploadError) throw new Error(uploadError.message);
 
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("device-docs")
-        .getPublicUrl(filePath);
-
-      setForm((f) => ({ ...f, docs: urlData.publicUrl }));
+      const publicUrl = storage.getPublicUrl("device-docs", filePath);
+      setForm((f) => ({ ...f, docs: publicUrl }));
       toast.success("PDF uploaded successfully");
     } catch (err: any) {
       toast.error(err.message || "Upload failed");

@@ -67,11 +67,11 @@ export default function PrintView() {
 
   const fetchExtraData = useCallback(async () => {
     const [rackRes, devRes, cableRes, pduRes, wifiRes] = await Promise.all([
-      supabase.from("rack_items" as any).select("*").order("start_u"),
-      supabase.from("devices").select("id, device_name, brand, model, ip_address"),
-      supabase.from("cable_drops" as any).select("*").order("sort_order"),
-      supabase.from("pdu_outlets" as any).select("*").order("outlet_number"),
-      supabase.from("wireless_networks" as any).select("*").order("sort_order"),
+      api.getRackItems(),
+      api.getDevicesByName(),
+      api.getCableDrops(),
+      api.getPduOutlets(),
+      api.getWirelessNetworks(),
     ]);
     if (rackRes.data) setRackItems(rackRes.data as any);
     if (devRes.data) setRackDevices(devRes.data as RackDevice[]);

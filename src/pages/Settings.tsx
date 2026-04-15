@@ -202,19 +202,20 @@ function ProfileSettings({ user }: { user: any }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await supabase.from("profiles").update({ display_name: displayName }).eq("user_id", user.id);
+      await api.updateProfile(user.id, { display_name: displayName } as any);
 
       if (email !== user.email) {
-        const { error } = await supabase.auth.updateUser({ email });
-        if (error) throw error;
+        const { error } = await authApi.updateUserEmail(email);
+        if (error) throw new Error(error.message);
         toast.info("Check your new email for a confirmation link");
       }
 
       if (newPassword) {
         if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); setSaving(false); return; }
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) throw error;
+        const { error } = await authApi.updateUserPassword(newPassword);
+        if (error) throw new Error(error.message);
         setNewPassword("");
+      }
       }
 
       toast.success("Profile updated");
