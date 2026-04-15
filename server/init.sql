@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS ipam;
 USE ipam;
 
--- Users (replaces Supabase auth.users)
+-- Users (authentication)
 CREATE TABLE IF NOT EXISTS users (
   id CHAR(36) PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -41,9 +41,9 @@ CREATE TABLE IF NOT EXISTS devices (
   device_name VARCHAR(255) DEFAULT '',
   brand VARCHAR(255) DEFAULT '',
   model VARCHAR(255) DEFAULT '',
-  docs TEXT DEFAULT (''),
+  docs TEXT,
   location VARCHAR(255) DEFAULT '',
-  notes TEXT DEFAULT (''),
+  notes TEXT,
   status VARCHAR(50) DEFAULT 'active',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS rack_items (
   start_u INT NOT NULL,
   u_size INT DEFAULT 1,
   label VARCHAR(255) DEFAULT '',
-  notes TEXT DEFAULT (''),
+  notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE SET NULL
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS cable_drops (
   category VARCHAR(255) DEFAULT '',
   switch_model VARCHAR(255) DEFAULT '',
   switch_port VARCHAR(255) DEFAULT '',
-  notes TEXT DEFAULT (''),
+  notes TEXT,
   sort_order INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS pdu_outlets (
   id CHAR(36) PRIMARY KEY,
   outlet_number INT NOT NULL,
   device_name VARCHAR(255) DEFAULT '',
-  notes TEXT DEFAULT (''),
+  notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS wireless_networks (
   id CHAR(36) PRIMARY KEY,
   ssid VARCHAR(255) DEFAULT '',
   password VARCHAR(255) DEFAULT '',
-  notes TEXT DEFAULT (''),
+  notes TEXT,
   is_hidden TINYINT(1) DEFAULT 0,
   sort_order INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 
 -- Seed default admin user (password: admin123)
+-- Change this password immediately after first login!
 INSERT INTO users (id, email, password_hash) VALUES
   ('00000000-0000-0000-0000-000000000001', 'admin@warp9studios.com', '$2b$10$dNqV4VmeJ4y0MMI2bWRJK.ZKvixXTVA3EpKekbM9kPVyOx7oXvhIi')
 ON DUPLICATE KEY UPDATE email = email;
