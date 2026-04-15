@@ -401,7 +401,7 @@ function UserManagement({ currentUserId }: { currentUserId?: string }) {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase.functions.invoke("manage-users", { body: { action: "list" } });
+    const { data, error } = await api.invokeFunction("manage-users", { action: "list" });
     if (error) { toast.error("Failed to load users"); setLoading(false); return; }
     setUsers(data.users || []);
     setLoading(false);
@@ -432,12 +432,12 @@ function UserManagement({ currentUserId }: { currentUserId?: string }) {
         const body: any = { action: "update", user_id: editUser.id, display_name: formName };
         if (formEmail !== editUser.email) body.email = formEmail;
         if (formPassword) body.password = formPassword;
-        const { data, error } = await supabase.functions.invoke("manage-users", { body });
+        const { data, error } = await api.invokeFunction("manage-users", body);
         if (error || data?.error) throw new Error(data?.error || error?.message);
         toast.success("User updated");
       } else {
         if (!formEmail || !formPassword) { toast.error("Email and password required"); setSaving(false); return; }
-        const { data, error } = await supabase.functions.invoke("manage-users", {
+        const { data, error } = await api.invokeFunction("manage-users", {
           body: { action: "create", email: formEmail, password: formPassword, display_name: formName },
         });
         if (error || data?.error) throw new Error(data?.error || error?.message);
@@ -453,7 +453,7 @@ function UserManagement({ currentUserId }: { currentUserId?: string }) {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    const { data, error } = await supabase.functions.invoke("manage-users", {
+    const { data, error } = await api.invokeFunction("manage-users", {
       body: { action: "delete", user_id: deleteTarget.id },
     });
     if (error || data?.error) {
