@@ -16,9 +16,18 @@ export default function Login() {
 
   useEffect(() => {
     const BASE = import.meta.env.VITE_API_URL || "/api";
-    fetch(`${BASE}/health`, { signal: AbortSignal.timeout(5000) })
-      .then((r) => setApiReachable(r.ok))
-      .catch(() => setApiReachable(false));
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    fetch(`${BASE}/health`, { signal: controller.signal })
+      .then(async (r) => {
+        clearTimeout(timer);
+        if (!r.ok) return setApiReachable(false);
+        // Verify it's actually JSON from our API, not an SPA fallback
+        const ct = r.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) return setApiReachable(false);
+        setApiReachable(true);
+      })
+      .catch(() => { clearTimeout(timer); setApiReachable(false); });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
