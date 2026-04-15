@@ -12,7 +12,7 @@ import VlanSummaryTable from "@/components/VlanSummaryTable";
 import AuditLogPanel from "@/components/AuditLogPanel";
 import IconPicker, { AVAILABLE_ICONS } from "@/components/IconPicker";
 import { VlanInfo } from "@/types/network";
-import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List, Cable, Plug, ChevronDown, X, Palette, Wifi, Server } from "lucide-react";
+import { Network, Activity, LogOut, Search, Plus, Settings, BarChart3, ScrollText, Menu, Globe, List, Cable, Plug, ChevronDown, X, Palette, Wifi, Server, Printer } from "lucide-react";
 import UserAvatarMenu from "@/components/UserAvatarMenu";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -312,6 +312,9 @@ export default function Dashboard() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/rack")}>
                 <Server className="h-4 w-4 mr-2" /> Server Rack
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/print")}>
+                <Printer className="h-4 w-4 mr-2" /> Print IPAM
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuSub>

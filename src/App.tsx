@@ -16,6 +16,7 @@ import CableDrops from "./pages/CableDrops.tsx";
 import PduOutlets from "./pages/PduOutlets.tsx";
 import WirelessNetworks from "./pages/WirelessNetworks.tsx";
 import RackView from "./pages/RackView.tsx";
+import PrintView from "./pages/PrintView.tsx";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
                 <Route path="/pdu" element={<ProtectedRoute><PduOutlets /></ProtectedRoute>} />
                 <Route path="/wireless" element={<ProtectedRoute><WirelessNetworks /></ProtectedRoute>} />
                 <Route path="/rack" element={<ProtectedRoute><RackView /></ProtectedRoute>} />
+                <Route path="/print" element={<ProtectedRoute><PrintView /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
