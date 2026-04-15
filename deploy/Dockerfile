@@ -6,17 +6,12 @@ COPY package.json bun.lock* package-lock.json* ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
-
-# Point frontend to the API server
-ARG VITE_API_URL
-ENV VITE_API_URL=${VITE_API_URL}
-
 RUN npm run build
 
 # ── Stage 2: Serve with Nginx ────────────────────────────────
 FROM nginx:alpine
 
-# SPA fallback + reverse proxy /api to the API container
+# SPA fallback + reverse proxy /api and /uploads to the API container
 RUN echo 'server { \
     listen 80; \
     server_name _; \
@@ -26,6 +21,7 @@ RUN echo 'server { \
         proxy_pass http://api:3001; \
         proxy_set_header Host $host; \
         proxy_set_header X-Real-IP $remote_addr; \
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
     } \
     location /uploads/ { \
         proxy_pass http://api:3001; \

@@ -3,8 +3,7 @@ version: "3.8"
 # =============================================================
 # Warp9Net IPAM — Self-Hosted Stack for Portainer
 # 3 containers: MySQL + API + Frontend
-# Frontend on port 4242, API on port 3001 (internal)
-# Proxy via Nginx Proxy Manager → ipam.warp9studios.com:443
+# Frontend on port 4242, API proxied via Nginx
 # =============================================================
 
 services:
@@ -15,8 +14,8 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ipam
-      MYSQL_USER: ipam
+      MYSQL_DATABASE: ${DB_NAME:-ipam}
+      MYSQL_USER: ${DB_USER:-ipam}
       MYSQL_PASSWORD: ${DB_PASSWORD:-ipam_password}
     volumes:
       - db-data:/var/lib/mysql
@@ -36,9 +35,9 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 3306
-      DB_USER: ipam
+      DB_USER: ${DB_USER:-ipam}
       DB_PASSWORD: ${DB_PASSWORD:-ipam_password}
-      DB_NAME: ipam
+      DB_NAME: ${DB_NAME:-ipam}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       PORT: 3001
     volumes:
@@ -52,8 +51,6 @@ services:
     build:
       context: .
       dockerfile: deploy/Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
     restart: unless-stopped
     ports:
       - "4242:80"
