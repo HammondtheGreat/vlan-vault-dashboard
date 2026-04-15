@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as authApi from "@/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Activity, Lock, Mail } from "lucide-react";
+import { Activity, Lock, Mail, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -12,6 +12,14 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [apiReachable, setApiReachable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const BASE = import.meta.env.VITE_API_URL || "/api";
+    fetch(`${BASE}/health`, { signal: AbortSignal.timeout(5000) })
+      .then((r) => setApiReachable(r.ok))
+      .catch(() => setApiReachable(false));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +31,12 @@ export default function Login() {
       if (error) throw new Error(error.message);
       navigate("/");
     } catch (err: any) {
-      toast.error(err.message || "Authentication failed");
+      const msg = err.message || "Authentication failed";
+      if (msg === "Failed to fetch" || msg.includes("NetworkError")) {
+        toast.error("Cannot reach the API server. Is the backend running?");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -39,6 +52,19 @@ export default function Login() {
           <h1 className="text-xl font-semibold text-foreground">Warp9Net IPAM</h1>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>
+
+        {apiReachable === false && (
+          <div className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-destructive">Backend not reachable</p>
+              <p className="text-muted-foreground mt-1">
+                The API server isn't responding. Make sure the Docker stack is running
+                (<code className="text-xs bg-muted px-1 rounded">docker compose up -d</code>).
+              </p>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
           <div className="space-y-1.5">
@@ -73,7 +99,7 @@ export default function Login() {
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || apiReachable === false}
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {loading ? "Signing in..." : "Sign In"}
