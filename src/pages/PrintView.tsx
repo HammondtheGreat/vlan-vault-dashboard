@@ -41,6 +41,14 @@ interface PduOutlet {
   notes: string;
 }
 
+interface WirelessNetwork {
+  id: string;
+  ssid: string;
+  password: string;
+  is_hidden: boolean;
+  notes: string;
+}
+
 const TOTAL_U = 22;
 
 export default function PrintView() {
@@ -51,22 +59,25 @@ export default function PrintView() {
   const [rackDevices, setRackDevices] = useState<RackDevice[]>([]);
   const [cableDrops, setCableDrops] = useState<CableDrop[]>([]);
   const [pduOutlets, setPduOutlets] = useState<PduOutlet[]>([]);
+  const [wirelessNets, setWirelessNets] = useState<WirelessNetwork[]>([]);
 
   useEffect(() => {
     document.title = `${settings.site_name} — Print View`;
   }, [settings.site_name]);
 
   const fetchExtraData = useCallback(async () => {
-    const [rackRes, devRes, cableRes, pduRes] = await Promise.all([
+    const [rackRes, devRes, cableRes, pduRes, wifiRes] = await Promise.all([
       supabase.from("rack_items" as any).select("*").order("start_u"),
       supabase.from("devices").select("id, device_name, brand, model, ip_address"),
       supabase.from("cable_drops" as any).select("*").order("sort_order"),
       supabase.from("pdu_outlets" as any).select("*").order("outlet_number"),
+      supabase.from("wireless_networks" as any).select("*").order("sort_order"),
     ]);
     if (rackRes.data) setRackItems(rackRes.data as any);
     if (devRes.data) setRackDevices(devRes.data as RackDevice[]);
     if (cableRes.data) setCableDrops(cableRes.data as any);
     if (pduRes.data) setPduOutlets(pduRes.data as any);
+    if (wifiRes.data) setWirelessNets(wifiRes.data as any);
   }, []);
 
   useEffect(() => { fetchExtraData(); }, [fetchExtraData]);
@@ -293,6 +304,38 @@ export default function PrintView() {
                     <td className="py-1.5 px-2 text-center font-mono text-xs">{pdu.outlet_number}</td>
                     <td className="py-1.5 px-2 font-medium">{pdu.device_name || "—"}</td>
                     <td className="py-1.5 px-2 text-xs text-muted-foreground print:text-gray-500">{pdu.notes || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Wireless Networks */}
+        {wirelessNets.length > 0 && (
+          <div className="mt-10 print:mt-6 print:break-before-page">
+            <div className="flex items-baseline gap-2 mb-3 border-b-2 border-foreground/20 print:border-black/30 pb-1">
+              <h2 className="text-lg font-bold text-foreground print:text-black">Wireless Networks</h2>
+              <span className="text-xs text-muted-foreground print:text-gray-500 ml-auto">
+                {wirelessNets.length} network{wirelessNets.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <table className="w-full text-sm border-collapse border border-border print:border-gray-400">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground print:text-gray-600 bg-muted/30 print:bg-gray-100">
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">SSID</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Password</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Hidden</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {wirelessNets.map((wn) => (
+                  <tr key={wn.id} className="border border-border print:border-gray-300 text-foreground print:text-black">
+                    <td className="py-1.5 px-2 font-medium">{wn.ssid}</td>
+                    <td className="py-1.5 px-2 font-mono text-xs">{wn.password || "—"}</td>
+                    <td className="py-1.5 px-2 text-xs">{wn.is_hidden ? "Yes" : "No"}</td>
+                    <td className="py-1.5 px-2 text-xs text-muted-foreground print:text-gray-500">{wn.notes || "—"}</td>
                   </tr>
                 ))}
               </tbody>
