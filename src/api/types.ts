@@ -1,6 +1,5 @@
-// Backend-agnostic API types
-// These types define the contract between frontend and backend.
-// The current implementation uses Supabase; Phase 2 will swap to a REST API.
+// Backend API types
+// These types define the contract between the React frontend and the Express REST API.
 
 export interface AuthUser {
   id: string;
