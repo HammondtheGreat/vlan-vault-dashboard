@@ -89,6 +89,12 @@ Deno.serve(async (req) => {
       if (display_name !== undefined) updates.user_metadata = { full_name: display_name };
       const { error } = await adminClient.auth.admin.updateUserById(user_id, updates);
       if (error) throw error;
+
+      // Sync display_name to profiles table
+      if (display_name !== undefined) {
+        await adminClient.from("profiles").update({ display_name }).eq("user_id", user_id);
+      }
+
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
