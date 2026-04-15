@@ -1,7 +1,6 @@
-// Backend-agnostic API client
-// Currently implemented with Supabase. Phase 2 will swap to a standard REST API.
+// Backend-agnostic API client — REST implementation
+// Talks to the Express API server via fetch
 
-import { supabase } from "@/integrations/supabase/client";
 import type {
   VlanRow, VlanInsert, VlanUpdate,
   DeviceRow, DeviceInsert, DeviceUpdate,
@@ -14,245 +13,223 @@ import type {
   ApiResult,
 } from "./types";
 
-// ── Helper ───────────────────────────────────────────────────
-function result<T>(data: T | null, error: any): ApiResult<T> {
-  return { data, error: error ? { message: error.message || String(error) } : null };
+// ── Base URL ─────────────────────────────────────────────────
+const BASE = import.meta.env.VITE_API_URL || "/api";
+
+function getToken(): string | null {
+  return localStorage.getItem("auth_token");
+}
+
+async function api<T>(path: string, options: RequestInit = {}): Promise<ApiResult<T>> {
+  try {
+    const token = getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers as Record<string, string> || {}),
+    };
+    const res = await fetch(`${BASE}${path}`, { ...options, headers });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: res.statusText }));
+      return { data: null, error: { message: body.error || res.statusText } };
+    }
+    const data = await res.json().catch(() => null);
+    return { data: data as T, error: null };
+  } catch (err: any) {
+    return { data: null, error: { message: err.message || String(err) } };
+  }
 }
 
 // ── VLANs ────────────────────────────────────────────────────
 export async function getVlans(): Promise<ApiResult<VlanRow[]>> {
-  const { data, error } = await supabase.from("vlans" as any).select("*").order("vlan_id");
-  return result(data as any, error);
+  return api<VlanRow[]>("/vlans");
 }
 
 export async function createVlan(row: VlanInsert): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("vlans" as any).insert(row as any);
-  return result(null, error);
+  return api("/vlans", { method: "POST", body: JSON.stringify(row) });
 }
 
 export async function updateVlan(vlanId: number, updates: VlanUpdate): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("vlans" as any).update(updates as any).eq("vlan_id", vlanId);
-  return result(null, error);
+  return api(`/vlans/${vlanId}`, { method: "PUT", body: JSON.stringify(updates) });
 }
 
 export async function deleteVlan(vlanId: number): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("vlans" as any).delete().eq("vlan_id", vlanId);
-  return result(null, error);
+  return api(`/vlans/${vlanId}`, { method: "DELETE" });
 }
 
 // ── Devices ──────────────────────────────────────────────────
 export async function getDevices(): Promise<ApiResult<DeviceRow[]>> {
-  const { data, error } = await supabase.from("devices" as any).select("*").order("ip_address");
-  return result(data as any, error);
+  return api<DeviceRow[]>("/devices");
 }
 
 export async function getDevicesByName(): Promise<ApiResult<DeviceRow[]>> {
-  const { data, error } = await supabase.from("devices").select("*").order("device_name");
-  return result(data as DeviceRow[] | null, error);
+  return api<DeviceRow[]>("/devices?order=name");
 }
 
 export async function createDevice(row: DeviceInsert): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("devices" as any).insert(row as any);
-  return result(null, error);
+  return api("/devices", { method: "POST", body: JSON.stringify(row) });
 }
 
 export async function updateDevice(id: string, updates: DeviceUpdate): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("devices" as any).update(updates as any).eq("id", id);
-  return result(null, error);
+  return api(`/devices/${id}`, { method: "PUT", body: JSON.stringify(updates) });
 }
 
 export async function deleteDevice(id: string): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("devices" as any).delete().eq("id", id);
-  return result(null, error);
+  return api(`/devices/${id}`, { method: "DELETE" });
 }
 
 export async function updateDevicesByVlan(vlanId: number, updates: Partial<DeviceUpdate>): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("devices" as any).update(updates as any).eq("vlan_id", vlanId);
-  return result(null, error);
+  return api(`/devices/by-vlan/${vlanId}`, { method: "PUT", body: JSON.stringify(updates) });
 }
 
 export async function deleteAllDevices(): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("devices" as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
-  return result(null, error);
+  return api("/devices", { method: "DELETE" });
 }
 
 export async function deleteAllVlans(): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("vlans" as any).delete().neq("id", "00000000-0000-0000-0000-000000000000");
-  return result(null, error);
+  return api("/vlans", { method: "DELETE" });
 }
 
 export async function bulkInsertVlans(rows: VlanInsert[]): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("vlans" as any).insert(rows as any);
-  return result(null, error);
+  return api("/vlans/bulk", { method: "POST", body: JSON.stringify(rows) });
 }
 
 export async function bulkInsertDevices(rows: DeviceInsert[]): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("devices" as any).insert(rows as any);
-  return result(null, error);
+  return api("/devices/bulk", { method: "POST", body: JSON.stringify(rows) });
 }
 
 // ── Rack Items ───────────────────────────────────────────────
 export async function getRackItems(): Promise<ApiResult<RackItemRow[]>> {
-  const { data, error } = await supabase.from("rack_items" as any).select("*").order("start_u");
-  return result(data as any, error);
+  return api<RackItemRow[]>("/rack-items");
 }
 
 export async function createRackItem(row: RackItemInsert): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("rack_items" as any).insert(row as any);
-  return result(null, error);
+  return api("/rack-items", { method: "POST", body: JSON.stringify(row) });
 }
 
 export async function updateRackItem(id: string, updates: RackItemUpdate): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("rack_items" as any).update(updates as any).eq("id", id);
-  return result(null, error);
+  return api(`/rack-items/${id}`, { method: "PUT", body: JSON.stringify(updates) });
 }
 
 export async function deleteRackItem(id: string): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("rack_items" as any).delete().eq("id", id);
-  return result(null, error);
+  return api(`/rack-items/${id}`, { method: "DELETE" });
 }
 
 // ── Cable Drops ──────────────────────────────────────────────
 export async function getCableDrops(): Promise<ApiResult<CableDropRow[]>> {
-  const { data, error } = await supabase.from("cable_drops" as any).select("*").order("sort_order");
-  return result(data as any, error);
+  return api<CableDropRow[]>("/cable-drops");
 }
 
 export async function createCableDrop(row: CableDropInsert): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("cable_drops" as any).insert(row as any);
-  return result(null, error);
+  return api("/cable-drops", { method: "POST", body: JSON.stringify(row) });
 }
 
 export async function updateCableDrop(id: string, updates: CableDropUpdate): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("cable_drops" as any).update(updates as any).eq("id", id);
-  return result(null, error);
+  return api(`/cable-drops/${id}`, { method: "PUT", body: JSON.stringify(updates) });
 }
 
 export async function deleteCableDrop(id: string): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("cable_drops" as any).delete().eq("id", id);
-  return result(null, error);
+  return api(`/cable-drops/${id}`, { method: "DELETE" });
 }
 
 // ── PDU Outlets ──────────────────────────────────────────────
 export async function getPduOutlets(): Promise<ApiResult<PduOutletRow[]>> {
-  const { data, error } = await supabase.from("pdu_outlets" as any).select("*").order("outlet_number");
-  return result(data as any, error);
+  return api<PduOutletRow[]>("/pdu-outlets");
 }
 
 export async function createPduOutlet(row: PduOutletInsert): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("pdu_outlets" as any).insert(row as any);
-  return result(null, error);
+  return api("/pdu-outlets", { method: "POST", body: JSON.stringify(row) });
 }
 
 export async function updatePduOutlet(id: string, updates: PduOutletUpdate): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("pdu_outlets" as any).update(updates as any).eq("id", id);
-  return result(null, error);
+  return api(`/pdu-outlets/${id}`, { method: "PUT", body: JSON.stringify(updates) });
 }
 
 export async function deletePduOutlet(id: string): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("pdu_outlets" as any).delete().eq("id", id);
-  return result(null, error);
+  return api(`/pdu-outlets/${id}`, { method: "DELETE" });
 }
 
 // ── Wireless Networks ────────────────────────────────────────
 export async function getWirelessNetworks(): Promise<ApiResult<WirelessNetworkRow[]>> {
-  const { data, error } = await supabase.from("wireless_networks" as any).select("*").order("sort_order");
-  return result(data as any, error);
+  return api<WirelessNetworkRow[]>("/wireless-networks");
 }
 
 export async function createWirelessNetwork(row: WirelessNetworkInsert): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("wireless_networks" as any).insert(row as any);
-  return result(null, error);
+  return api("/wireless-networks", { method: "POST", body: JSON.stringify(row) });
 }
 
 export async function updateWirelessNetwork(id: string, updates: WirelessNetworkUpdate): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("wireless_networks" as any).update(updates as any).eq("id", id);
-  return result(null, error);
+  return api(`/wireless-networks/${id}`, { method: "PUT", body: JSON.stringify(updates) });
 }
 
 export async function deleteWirelessNetwork(id: string): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("wireless_networks" as any).delete().eq("id", id);
-  return result(null, error);
+  return api(`/wireless-networks/${id}`, { method: "DELETE" });
 }
 
 // ── App Settings ─────────────────────────────────────────────
-export async function getAppSettings(userId: string): Promise<ApiResult<AppSettingsRow | null>> {
-  const { data, error } = await supabase
-    .from("app_settings" as any)
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-  return result(data as any, error);
+export async function getAppSettings(_userId: string): Promise<ApiResult<AppSettingsRow | null>> {
+  return api<AppSettingsRow | null>("/settings/app");
 }
 
 export async function updateAppSettings(id: string, updates: Partial<AppSettingsRow>): Promise<ApiResult<null>> {
-  const { error } = await supabase
-    .from("app_settings" as any)
-    .update({ ...updates, updated_at: new Date().toISOString() } as any)
-    .eq("id", id);
-  return result(null, error);
+  return api("/settings/app", { method: "PUT", body: JSON.stringify({ id, ...updates }) });
 }
 
 export async function insertAppSettings(settings: Partial<AppSettingsRow> & { user_id: string }): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("app_settings" as any).insert(settings as any);
-  return result(null, error);
+  return api("/settings/app", { method: "PUT", body: JSON.stringify(settings) });
 }
 
 // ── SMTP Settings ────────────────────────────────────────────
-export async function getSmtpSettings(userId: string): Promise<ApiResult<SmtpSettingsRow | null>> {
-  const { data, error } = await supabase
-    .from("smtp_settings" as any)
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-  return result(data as any, error);
+export async function getSmtpSettings(_userId: string): Promise<ApiResult<SmtpSettingsRow | null>> {
+  return api<SmtpSettingsRow | null>("/settings/smtp");
 }
 
 export async function updateSmtpSettings(id: string, updates: Partial<SmtpSettingsRow>): Promise<ApiResult<null>> {
-  const { error } = await supabase
-    .from("smtp_settings" as any)
-    .update({ ...updates, updated_at: new Date().toISOString() } as any)
-    .eq("id", id);
-  return result(null, error);
+  return api("/settings/smtp", { method: "PUT", body: JSON.stringify({ id, ...updates }) });
 }
 
 export async function insertSmtpSettings(settings: Partial<SmtpSettingsRow> & { user_id: string }): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("smtp_settings" as any).insert(settings as any);
-  return result(null, error);
+  return api("/settings/smtp", { method: "PUT", body: JSON.stringify(settings) });
 }
 
 // ── Profiles ─────────────────────────────────────────────────
-export async function getProfile(userId: string): Promise<ApiResult<ProfileRow | null>> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("display_name, avatar_url")
-    .eq("user_id", userId)
-    .maybeSingle();
-  return result(data as any, error);
+export async function getProfile(_userId: string): Promise<ApiResult<ProfileRow | null>> {
+  return api<ProfileRow | null>("/profiles/me");
 }
 
-export async function updateProfile(userId: string, updates: Partial<ProfileRow>): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", userId);
-  return result(null, error);
+export async function updateProfile(_userId: string, updates: Partial<ProfileRow>): Promise<ApiResult<null>> {
+  return api("/profiles/me", { method: "PUT", body: JSON.stringify(updates) });
 }
 
 // ── Audit Log ────────────────────────────────────────────────
 export async function getAuditLog(limit = 50): Promise<ApiResult<AuditLogRow[]>> {
-  const { data, error } = await supabase
-    .from("audit_log" as any)
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  return result(data as any, error);
+  return api<AuditLogRow[]>(`/audit?limit=${limit}`);
 }
 
 export async function createAuditEntry(entry: AuditLogInsert): Promise<ApiResult<null>> {
-  const { error } = await supabase.from("audit_log" as any).insert(entry as any);
-  return result(null, error);
+  return api("/audit", { method: "POST", body: JSON.stringify(entry) });
 }
 
-// ── Edge Functions ───────────────────────────────────────────
+// ── Edge Functions (now just API calls) ──────────────────────
 export async function invokeFunction(name: string, body: any): Promise<{ data: any; error: any }> {
-  const { data, error } = await supabase.functions.invoke(name, { body });
-  return { data, error };
+  if (name === "manage-users") {
+    const action = body.action;
+    if (action === "list") {
+      const result = await api<any[]>("/users");
+      return { data: { users: result.data }, error: result.error };
+    }
+    if (action === "create") {
+      const result = await api("/users", { method: "POST", body: JSON.stringify(body) });
+      return { data: result.data, error: result.error };
+    }
+    if (action === "update") {
+      const result = await api(`/users/${body.user_id}`, { method: "PUT", body: JSON.stringify(body) });
+      return { data: result.data, error: result.error };
+    }
+    if (action === "delete") {
+      const result = await api(`/users/${body.user_id}`, { method: "DELETE" });
+      return { data: result.data, error: result.error };
+    }
+  }
+  return { data: null, error: { message: `Unknown function: ${name}` } };
 }
