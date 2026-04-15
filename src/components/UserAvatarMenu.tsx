@@ -67,7 +67,7 @@ export default function UserAvatarMenu() {
               </AvatarFallback>
             </Avatar>
             <span className="hidden sm:inline text-sm text-muted-foreground max-w-[120px] truncate">
-              {profile.display_name || user?.email || "User"}
+              {profile.display_name || "User"}
             </span>
           </button>
         </DropdownMenuTrigger>
