@@ -1,25 +1,47 @@
-// Backend-agnostic storage client
-// Currently implemented with Supabase Storage. Phase 2 will swap to API file uploads.
+// Backend-agnostic storage client — REST implementation
 
-import { supabase } from "@/integrations/supabase/client";
+const BASE = import.meta.env.VITE_API_URL || "/api";
+
+function getToken(): string | null {
+  return localStorage.getItem("auth_token");
+}
 
 export async function uploadFile(
   bucket: string,
   path: string,
   file: File,
-  options?: { upsert?: boolean }
+  _options?: { upsert?: boolean }
 ): Promise<{ error: { message: string } | null }> {
-  const { error } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, options);
-  return { error: error ? { message: error.message } : null };
+  const token = getToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  try {
+    const res = await fetch(`${BASE}/storage/${bucket}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      return { error: { message: body.error || "Upload failed" } };
+    }
+    return { error: null };
+  } catch (err: any) {
+    return { error: { message: err.message } };
+  }
 }
 
 export function getPublicUrl(bucket: string, path: string): string {
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
+  return `/uploads/${bucket}/${path}`;
 }
 
 export async function deleteFile(bucket: string, paths: string[]): Promise<void> {
-  await supabase.storage.from(bucket).remove(paths);
+  const token = getToken();
+  for (const p of paths) {
+    const filename = p.split("/").pop();
+    await fetch(`${BASE}/storage/${bucket}/${filename}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
 }
