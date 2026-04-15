@@ -233,6 +233,72 @@ export default function PrintView() {
             </tbody>
           </table>
         </div>
+
+        {/* Cable Drops */}
+        {cableDrops.length > 0 && (
+          <div className="mt-10 print:mt-6 print:break-before-page">
+            <div className="flex items-baseline gap-2 mb-3 border-b-2 border-foreground/20 print:border-black/30 pb-1">
+              <h2 className="text-lg font-bold text-foreground print:text-black">Cable Drops</h2>
+              <span className="text-xs text-muted-foreground print:text-gray-500 ml-auto">
+                {cableDrops.length} drop{cableDrops.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <table className="w-full text-sm border-collapse border border-border print:border-gray-400">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground print:text-gray-600 bg-muted/30 print:bg-gray-100">
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Label</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Location</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Category</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Switch</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Port</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cableDrops.map((cd) => (
+                  <tr key={cd.id} className="border border-border print:border-gray-300 text-foreground print:text-black">
+                    <td className="py-1.5 px-2 font-medium">{cd.label || "—"}</td>
+                    <td className="py-1.5 px-2">{cd.location || "—"}</td>
+                    <td className="py-1.5 px-2">{cd.category || "—"}</td>
+                    <td className="py-1.5 px-2 text-xs">{cd.switch_model || "—"}</td>
+                    <td className="py-1.5 px-2 font-mono text-xs">{cd.switch_port || "—"}</td>
+                    <td className="py-1.5 px-2 text-xs text-muted-foreground print:text-gray-500">{cd.notes || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* PDU Outlets */}
+        {pduOutlets.length > 0 && (
+          <div className="mt-10 print:mt-6 print:break-before-page">
+            <div className="flex items-baseline gap-2 mb-3 border-b-2 border-foreground/20 print:border-black/30 pb-1">
+              <h2 className="text-lg font-bold text-foreground print:text-black">PDU Outlets</h2>
+              <span className="text-xs text-muted-foreground print:text-gray-500 ml-auto">
+                {pduOutlets.length} outlet{pduOutlets.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <table className="w-full text-sm border-collapse border border-border print:border-gray-400">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground print:text-gray-600 bg-muted/30 print:bg-gray-100">
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300 w-20 text-center">Outlet #</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Device</th>
+                  <th className="py-1.5 px-2 font-medium border border-border print:border-gray-300">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pduOutlets.map((pdu) => (
+                  <tr key={pdu.id} className="border border-border print:border-gray-300 text-foreground print:text-black">
+                    <td className="py-1.5 px-2 text-center font-mono text-xs">{pdu.outlet_number}</td>
+                    <td className="py-1.5 px-2 font-medium">{pdu.device_name || "—"}</td>
+                    <td className="py-1.5 px-2 text-xs text-muted-foreground print:text-gray-500">{pdu.notes || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
