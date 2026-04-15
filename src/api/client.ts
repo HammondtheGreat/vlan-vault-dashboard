@@ -250,3 +250,9 @@ export async function createAuditEntry(entry: AuditLogInsert): Promise<ApiResult
   const { error } = await supabase.from("audit_log" as any).insert(entry as any);
   return result(null, error);
 }
+
+// ── Edge Functions ───────────────────────────────────────────
+export async function invokeFunction(name: string, body: any): Promise<{ data: any; error: any }> {
+  const { data, error } = await supabase.functions.invoke(name, { body });
+  return { data, error };
+}
