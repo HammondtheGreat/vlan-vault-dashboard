@@ -244,10 +244,21 @@ export default function VlanDetail() {
                         <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{d.model || "—"}</td>
                         <td className="px-4 py-2.5">
                           {d.docs ? (
-                            <a href={d.docs.startsWith("http") ? d.docs : undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
-                              <FileText className="h-3.5 w-3.5" />
-                              <span className="text-xs max-w-[80px] truncate">{d.docs.startsWith("http") ? "Link" : d.docs}</span>
-                            </a>
+                            d.docs.toLowerCase().endsWith(".pdf") ? (
+                              <button
+                                onClick={() => setPdfViewUrl(d.docs)}
+                                className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+                                title="View PDF"
+                              >
+                                <FileText className="h-3.5 w-3.5" />
+                                <span className="text-xs">View PDF</span>
+                              </button>
+                            ) : (
+                              <a href={d.docs.startsWith("http") ? d.docs : undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
+                                <FileText className="h-3.5 w-3.5" />
+                                <span className="text-xs max-w-[80px] truncate">{d.docs.startsWith("http") ? "Link" : d.docs}</span>
+                              </a>
+                            )
                           ) : "—"}
                         </td>
                         <td className="px-4 py-2.5 text-muted-foreground">{d.location || "—"}</td>
@@ -337,6 +348,12 @@ export default function VlanDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PdfViewerDialog
+        open={!!pdfViewUrl}
+        onClose={() => setPdfViewUrl(null)}
+        url={pdfViewUrl || ""}
+      />
     </div>
   );
 }
