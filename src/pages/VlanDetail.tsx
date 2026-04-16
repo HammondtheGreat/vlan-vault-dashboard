@@ -263,6 +263,7 @@ export default function VlanDetail() {
                                 <FileText className="h-3.5 w-3.5" />
                                 <span className="text-xs max-w-[80px] truncate">{d.docs}</span>
                               </span>
+                            )
                           ) : "—"}
                         </td>
                         <td className="px-4 py-2.5 text-muted-foreground">{d.location || "—"}</td>
