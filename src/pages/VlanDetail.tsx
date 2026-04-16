@@ -7,7 +7,7 @@ import DeviceFormDialog from "@/components/DeviceFormDialog";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import JunosConfigGenerator from "@/components/JunosConfigGenerator";
 import PdfViewerDialog from "@/components/PdfViewerDialog";
-import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock, AlertTriangle, FileText, ExternalLink, Settings2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock, AlertTriangle, FileText, Globe, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
