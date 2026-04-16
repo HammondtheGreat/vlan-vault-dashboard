@@ -54,6 +54,8 @@ services:
     restart: unless-stopped
     ports:
       - "4242:80"
+    volumes:
+      - uploads-data:/usr/share/nginx/html/uploads
     depends_on:
       api:
         condition: service_healthy
