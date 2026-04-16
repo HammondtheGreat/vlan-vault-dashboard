@@ -243,28 +243,23 @@ export default function VlanDetail() {
                         <td className="px-4 py-2.5 text-muted-foreground">{d.brand || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{d.model || "—"}</td>
                         <td className="px-4 py-2.5">
-                          {d.docs ? (
-                            d.docs.toLowerCase().endsWith(".pdf") || d.docs.includes("/device-docs/") ? (
+                          <div className="inline-flex items-center gap-2">
+                            {(d.docs && (d.docs.toLowerCase().endsWith(".pdf") || d.docs.includes("/device-docs/"))) && (
                               <button
                                 onClick={() => setPdfViewUrl(d.docs)}
-                                className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+                                className="text-primary hover:text-primary/80 transition-colors"
                                 title="View PDF"
                               >
-                                <FileText className="h-3.5 w-3.5" />
-                                <span className="text-xs">View PDF</span>
+                                <FileText className="h-4 w-4" />
                               </button>
-                            ) : /^https?:\/\/|^www\./i.test(d.docs) ? (
-                              <a href={d.docs.startsWith("www.") ? `https://${d.docs}` : d.docs} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
-                                <Globe className="h-3.5 w-3.5" />
-                                <span className="text-xs">Open Link</span>
+                            )}
+                            {d.docsUrl && /^https?:\/\/|^www\./i.test(d.docsUrl) && (
+                              <a href={d.docsUrl.startsWith("www.") ? `https://${d.docsUrl}` : d.docsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors" title={d.docsUrl}>
+                                <Globe className="h-4 w-4" />
                               </a>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-muted-foreground" title={d.docs}>
-                                <FileText className="h-3.5 w-3.5" />
-                                <span className="text-xs max-w-[80px] truncate">{d.docs}</span>
-                              </span>
-                            )
-                          ) : "—"}
+                            )}
+                            {!d.docs && !d.docsUrl && "—"}
+                          </div>
                         </td>
                         <td className="px-4 py-2.5 text-muted-foreground">{d.location || "—"}</td>
                         <td className="px-4 py-2.5 text-muted-foreground text-xs">{d.notes || "—"}</td>
