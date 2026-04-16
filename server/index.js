@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import { authMiddleware } from "./auth.js";
 import authRoutes from "./routes/auth.js";
 import vlansRoutes from "./routes/vlans.js";
@@ -14,12 +16,16 @@ import auditRoutes from "./routes/audit.js";
 import usersRoutes from "./routes/users.js";
 import storageRoutes from "./routes/storage.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsDir = path.join(__dirname, "uploads");
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
 // Public uploads directory
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(uploadsDir));
 
 // Auth routes (public)
 app.use("/api/auth", authRoutes);
