@@ -2,7 +2,7 @@
 
 export const ALLOWED_COLUMNS = {
   vlans: ["vlan_id", "name", "subnet", "color", "icon"],
-  devices: ["vlan_id", "ip_address", "device_name", "brand", "model", "docs", "location", "notes", "status"],
+  devices: ["vlan_id", "ip_address", "device_name", "brand", "model", "docs", "docs_url", "location", "notes", "status"],
   rack_items: ["device_id", "start_u", "u_size", "label", "notes"],
   cable_drops: ["label", "location", "category", "switch_model", "switch_port", "notes", "sort_order"],
   pdu_outlets: ["outlet_number", "device_name", "notes"],
