@@ -60,7 +60,7 @@ export default function UserAvatarMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2 hover:opacity-80 transition-opacity focus:outline-none">
-            <Avatar className="h-8 w-8 border border-border">
+            <Avatar className="h-8 w-8 border border-border" key={profile.avatar_url || "no-avatar"}>
               <AvatarImage src={profile.avatar_url || undefined} alt="Avatar" className="object-cover" />
               <AvatarFallback className="bg-primary/20 text-primary text-xs font-medium">
                 {initials}

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Zap, Upload, FileText, X, Loader2 } from "lucide-react";
+import { Zap, Upload, FileText, Globe, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
@@ -119,7 +119,8 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
     { key: "notes", label: "Notes", placeholder: "Additional notes" },
   ];
 
-  const isPdfUrl = form.docs.includes("/device-docs/") && form.docs.endsWith(".pdf");
+  const isPdfUrl = form.docs.includes("/device-docs/") || form.docs.toLowerCase().endsWith(".pdf");
+  const isUrl = !isPdfUrl && /^https?:\/\/|^www\./i.test(form.docs);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -200,6 +201,17 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
                 <FileText className="h-3.5 w-3.5 text-primary" />
                 <a href={form.docs} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[250px]">
                   Uploaded PDF
+                </a>
+                <button type="button" onClick={() => setForm((f) => ({ ...f, docs: "" }))} className="text-muted-foreground hover:text-destructive">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            {isUrl && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <Globe className="h-3.5 w-3.5 text-primary" />
+                <a href={form.docs.startsWith("www.") ? `https://${form.docs}` : form.docs} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[250px]">
+                  Open Link
                 </a>
                 <button type="button" onClick={() => setForm((f) => ({ ...f, docs: "" }))} className="text-muted-foreground hover:text-destructive">
                   <X className="h-3 w-3" />
