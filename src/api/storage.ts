@@ -11,7 +11,7 @@ export async function uploadFile(
   path: string,
   file: File,
   _options?: { upsert?: boolean }
-): Promise<{ error: { message: string } | null }> {
+): Promise<{ url?: string; error: { message: string } | null }> {
   const token = getToken();
   const formData = new FormData();
   formData.append("file", file);
@@ -25,7 +25,8 @@ export async function uploadFile(
       const body = await res.json().catch(() => ({}));
       return { error: { message: body.error || "Upload failed" } };
     }
-    return { error: null };
+    const body = await res.json();
+    return { url: body.url, error: null };
   } catch (err: any) {
     return { error: { message: err.message } };
   }

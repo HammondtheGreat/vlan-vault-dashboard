@@ -7,7 +7,7 @@ import DeviceFormDialog from "@/components/DeviceFormDialog";
 import VlanFormDialog from "@/components/VlanFormDialog";
 import JunosConfigGenerator from "@/components/JunosConfigGenerator";
 import PdfViewerDialog from "@/components/PdfViewerDialog";
-import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock, AlertTriangle, FileText, Settings2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Activity, Search, Zap, Clock, AlertTriangle, FileText, ExternalLink, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -253,11 +253,16 @@ export default function VlanDetail() {
                                 <FileText className="h-3.5 w-3.5" />
                                 <span className="text-xs">View PDF</span>
                               </button>
-                            ) : (
-                              <a href={d.docs.startsWith("http") ? d.docs : undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
-                                <FileText className="h-3.5 w-3.5" />
-                                <span className="text-xs max-w-[80px] truncate">{d.docs.startsWith("http") ? "Link" : d.docs}</span>
+                            ) : d.docs.startsWith("http") ? (
+                              <a href={d.docs} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                <span className="text-xs">Link</span>
                               </a>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-muted-foreground" title={d.docs}>
+                                <FileText className="h-3.5 w-3.5" />
+                                <span className="text-xs max-w-[80px] truncate">{d.docs}</span>
+                              </span>
                             )
                           ) : "—"}
                         </td>
