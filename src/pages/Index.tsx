@@ -335,9 +335,11 @@ export default function Dashboard() {
 
         {activeView === "summary" && (
           <div className="relative">
-            <Button size="icon" variant="ghost" className="absolute top-2 right-2 h-7 w-7" onClick={() => setActiveView(null)}>
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center justify-end mb-1">
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setActiveView(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
             <VlanSummaryTable />
           </div>
         )}

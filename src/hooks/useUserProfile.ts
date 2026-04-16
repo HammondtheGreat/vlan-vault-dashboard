@@ -27,13 +27,10 @@ export function useUserProfile() {
     const ext = file.name.split(".").pop() || "jpg";
     const filePath = `${user.id}/avatar.${ext}`;
 
-    await storage.deleteFile("avatars", [filePath]);
-
-    const { error: uploadError } = await storage.uploadFile("avatars", filePath, file, { upsert: true });
+    const { url, error: uploadError } = await storage.uploadFile("avatars", filePath, file, { upsert: true });
     if (uploadError) throw new Error(uploadError.message);
 
-    const publicUrl = storage.getPublicUrl("avatars", filePath);
-    const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+    const avatarUrl = `${url}?t=${Date.now()}`;
     await api.updateProfile(user.id, { avatar_url: avatarUrl } as any);
     setProfile((p) => ({ ...p, avatar_url: avatarUrl }));
     return avatarUrl;
