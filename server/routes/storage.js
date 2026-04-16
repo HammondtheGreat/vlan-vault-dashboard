@@ -2,13 +2,17 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 
 const router = Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsRoot = path.join(__dirname, "..", "uploads");
 
 const storage = multer.diskStorage({
   destination: (req, _file, cb) => {
     const bucket = req.params.bucket || "general";
-    const dir = path.join("uploads", bucket);
+    const dir = path.join(uploadsRoot, bucket);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
@@ -27,7 +31,7 @@ router.post("/:bucket", upload.single("file"), (req, res) => {
 });
 
 router.delete("/:bucket/:filename", (req, res) => {
-  const filepath = path.join("uploads", req.params.bucket, req.params.filename);
+  const filepath = path.join(uploadsRoot, req.params.bucket, req.params.filename);
   if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
   res.json({ ok: true });
 });
