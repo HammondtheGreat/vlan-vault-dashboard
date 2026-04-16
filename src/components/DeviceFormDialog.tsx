@@ -42,6 +42,7 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
     brand: "",
     model: "",
     docs: "",
+    docsUrl: "",
     location: "",
     notes: "",
     status: "",
@@ -49,9 +50,9 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
 
   useEffect(() => {
     if (device) {
-      setForm({ ipAddress: device.ipAddress, device: device.device, brand: device.brand, model: device.model, docs: device.docs, location: device.location, notes: device.notes, status: device.status || "" });
+      setForm({ ipAddress: device.ipAddress, device: device.device, brand: device.brand, model: device.model, docs: device.docs, docsUrl: device.docsUrl || "", location: device.location, notes: device.notes, status: device.status || "" });
     } else {
-      setForm({ ipAddress: "", device: "", brand: "", model: "", docs: "", location: "", notes: "", status: "" });
+      setForm({ ipAddress: "", device: "", brand: "", model: "", docs: "", docsUrl: "", location: "", notes: "", status: "" });
     }
   }, [device, open]);
 
