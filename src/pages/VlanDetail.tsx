@@ -244,7 +244,7 @@ export default function VlanDetail() {
                         <td className="px-4 py-2.5 text-muted-foreground font-mono text-xs">{d.model || "—"}</td>
                         <td className="px-4 py-2.5">
                           {d.docs ? (
-                            d.docs.toLowerCase().endsWith(".pdf") ? (
+                            d.docs.toLowerCase().endsWith(".pdf") || d.docs.includes("/device-docs/") ? (
                               <button
                                 onClick={() => setPdfViewUrl(d.docs)}
                                 className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
@@ -253,10 +253,10 @@ export default function VlanDetail() {
                                 <FileText className="h-3.5 w-3.5" />
                                 <span className="text-xs">View PDF</span>
                               </button>
-                            ) : d.docs.startsWith("http") ? (
-                              <a href={d.docs} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
-                                <ExternalLink className="h-3.5 w-3.5" />
-                                <span className="text-xs">Link</span>
+                            ) : /^https?:\/\/|^www\./i.test(d.docs) ? (
+                              <a href={d.docs.startsWith("www.") ? `https://${d.docs}` : d.docs} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors" title={d.docs}>
+                                <Globe className="h-3.5 w-3.5" />
+                                <span className="text-xs">Open Link</span>
                               </a>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-muted-foreground" title={d.docs}>
