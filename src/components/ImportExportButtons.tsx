@@ -160,6 +160,7 @@ function parseCsvImport(text: string): ImportData {
         brand: col(r, brandIdx),
         model: col(r, modelIdx),
         docs: col(r, docsIdx),
+        docsUrl: "",
         location: col(r, locIdx),
         notes: col(r, notesIdx),
         updatedAt: col(r, updIdx) || new Date().toISOString(),

@@ -31,6 +31,7 @@ function makeDevices(_vlanId: number, entries: Partial<DeviceEntry>[]): DeviceEn
     brand: e.brand || "",
     model: e.model || "",
     docs: e.docs || "",
+    docsUrl: e.docsUrl || "",
     location: e.location || "",
     notes: e.notes || "",
     status: e.status || "",

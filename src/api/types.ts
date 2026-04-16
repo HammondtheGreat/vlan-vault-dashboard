@@ -54,6 +54,7 @@ export interface DeviceRow {
   brand: string;
   model: string;
   docs: string;
+  docs_url: string;
   location: string;
   notes: string;
   status: string;
@@ -68,6 +69,7 @@ export interface DeviceInsert {
   brand: string;
   model: string;
   docs: string;
+  docs_url: string;
   location: string;
   notes: string;
   status: string;
@@ -80,6 +82,7 @@ export interface DeviceUpdate {
   brand?: string;
   model?: string;
   docs?: string;
+  docs_url?: string;
   location?: string;
   notes?: string;
   status?: string;

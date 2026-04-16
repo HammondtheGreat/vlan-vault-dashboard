@@ -17,12 +17,12 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { vlan_id, ip_address, device_name, brand, model, docs, location, notes, status } = req.body;
+    const { vlan_id, ip_address, device_name, brand, model, docs, docs_url, location, notes, status } = req.body;
     const id = uuid();
     await pool.query(
-      `INSERT INTO devices (id, vlan_id, ip_address, device_name, brand, model, docs, location, notes, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, vlan_id, ip_address || "", device_name || "", brand || "", model || "", docs || "", location || "", notes || "", status || "active"]
+      `INSERT INTO devices (id, vlan_id, ip_address, device_name, brand, model, docs, docs_url, location, notes, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, vlan_id, ip_address || "", device_name || "", brand || "", model || "", docs || "", docs_url || "", location || "", notes || "", status || "active"]
     );
     res.status(201).json({ id });
   } catch (err) {
@@ -77,9 +77,9 @@ router.post("/bulk", async (req, res) => {
     for (const r of req.body) {
       const id = uuid();
       await pool.query(
-        `INSERT INTO devices (id, vlan_id, ip_address, device_name, brand, model, docs, location, notes, status) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, r.vlan_id, r.ip_address || "", r.device_name || "", r.brand || "", r.model || "", r.docs || "", r.location || "", r.notes || "", r.status || "active"]
+        `INSERT INTO devices (id, vlan_id, ip_address, device_name, brand, model, docs, docs_url, location, notes, status) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, r.vlan_id, r.ip_address || "", r.device_name || "", r.brand || "", r.model || "", r.docs || "", r.docs_url || "", r.location || "", r.notes || "", r.status || "active"]
       );
     }
     res.status(201).json({ ok: true });

@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS devices (
   brand VARCHAR(255) DEFAULT '',
   model VARCHAR(255) DEFAULT '',
   docs TEXT,
+  docs_url TEXT,
   location VARCHAR(255) DEFAULT '',
   notes TEXT,
   status VARCHAR(50) DEFAULT 'active',
