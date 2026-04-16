@@ -13,6 +13,7 @@ export interface DeviceEntry {
   brand: string;
   model: string;
   docs: string;
+  docsUrl: string;
   location: string;
   notes: string;
   status: string;
