@@ -120,8 +120,7 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
     { key: "notes", label: "Notes", placeholder: "Additional notes" },
   ];
 
-  const isPdfUrl = form.docs.includes("/device-docs/") || form.docs.toLowerCase().endsWith(".pdf");
-  const isUrl = !isPdfUrl && /^https?:\/\/|^www\./i.test(form.docs);
+  const hasPdf = form.docs.includes("/device-docs/") || form.docs.toLowerCase().endsWith(".pdf");
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -168,16 +167,28 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
             </div>
           ))}
 
-          {/* Docs field with PDF upload */}
+          {/* Web URL field */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Docs</Label>
-            <div className="flex gap-2">
+            <Label className="text-xs text-muted-foreground">Web Link</Label>
+            <div className="flex gap-2 items-center">
               <Input
-                value={form.docs}
-                onChange={(e) => setForm((f) => ({ ...f, docs: e.target.value }))}
-                placeholder="URL or description"
+                value={form.docsUrl}
+                onChange={(e) => setForm((f) => ({ ...f, docsUrl: e.target.value }))}
+                placeholder="https://example.com/docs"
                 className="bg-muted/50 border-border flex-1"
               />
+              {form.docsUrl && (
+                <button type="button" onClick={() => setForm((f) => ({ ...f, docsUrl: "" }))} className="text-muted-foreground hover:text-destructive">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* PDF upload field */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">PDF Document</Label>
+            <div className="flex gap-2 items-center">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -185,40 +196,28 @@ export default function DeviceFormDialog({ open, onClose, onSave, device, vlanSu
                 className="hidden"
                 onChange={handlePdfUpload}
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="border-primary/30 text-primary hover:bg-primary/10 shrink-0 gap-1"
-              >
-                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                PDF
-              </Button>
+              {hasPdf ? (
+                <div className="flex items-center gap-1.5 flex-1">
+                  <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="text-xs text-primary truncate">PDF attached</span>
+                  <button type="button" onClick={() => setForm((f) => ({ ...f, docs: "" }))} className="text-muted-foreground hover:text-destructive ml-auto">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="border-primary/30 text-primary hover:bg-primary/10 gap-1"
+                >
+                  {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                  Upload PDF
+                </Button>
+              )}
             </div>
-            {isPdfUrl && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <FileText className="h-3.5 w-3.5 text-primary" />
-                <a href={form.docs} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[250px]">
-                  Uploaded PDF
-                </a>
-                <button type="button" onClick={() => setForm((f) => ({ ...f, docs: "" }))} className="text-muted-foreground hover:text-destructive">
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            {isUrl && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <Globe className="h-3.5 w-3.5 text-primary" />
-                <a href={form.docs.startsWith("www.") ? `https://${form.docs}` : form.docs} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate max-w-[250px]">
-                  Open Link
-                </a>
-                <button type="button" onClick={() => setForm((f) => ({ ...f, docs: "" }))} className="text-muted-foreground hover:text-destructive">
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Status dropdown */}
